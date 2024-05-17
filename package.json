@@ -1,0 +1,55 @@
+{
+  "name": "task_tracking",
+  "version": "0.1.0",
+  "author": {
+    "name": "Aung Nyein Htet",
+    "email": "aungnyeinhtet21@gmail.com"
+  },
+  "private": true,
+  "dependencies": {
+    "@apollo/client": "^3.10.4",
+    "@headlessui/react": "^1.7.16",
+    "@heroicons/react": "^2.0.18",
+    "@hookform/error-message": "^2.0.1",
+    "@hookform/resolvers": "^3.2.0",
+    "axios": "^1.4.0",
+    "date-fns": "^3.6.0",
+    "graphql": "^16.8.1",
+    "graphql-ws": "^5.16.0",
+    "jose": "^5.3.0",
+    "js-cookie": "^3.0.5",
+    "react": "^18.2.0",
+    "react-datepicker": "^6.9.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.45.4",
+    "react-icons": "^4.3.1",
+    "react-paginate": "^8.2.0",
+    "react-router-dom": "^6.2.1",
+    "react-scripts": "5.0.0",
+    "react-toastify": "^10.0.5",
+    "yup": "^1.2.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.2",
+    "postcss": "^8.4.6",
+    "tailwindcss": "^3.0.19"
+  }
+}
