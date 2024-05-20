@@ -1,20 +1,21 @@
 import React from "react";
 import { Button, Header, TextField, Textarea } from "../components";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@apollo/client";
 import { getAdminByID } from "../graphql/query/getAdminByID";
 import { editAdminByID } from "../graphql/mutation/editAdmin";
 import { toast } from "react-toastify";
+import useAuth from "../hooks/useAuth";
 
 const EditAdmin = () => {
   const { currentColor } = useStateContext();
-  const { id } = useParams();
+  const { userId } = useAuth();
   const navigate = useNavigate();
   const { data } = useQuery(getAdminByID, {
     variables: {
-      id,
+      id: userId,
     },
   });
   const admin = data?.admin_by_pk ? data?.admin_by_pk : null;

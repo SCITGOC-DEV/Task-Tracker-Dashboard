@@ -55,11 +55,11 @@ const MainRoutes = {
       element: <Profile />,
     },
     {
-      path: "/profile/change-password/:id",
+      path: "/profile/change-password",
       element: <ChangeAdminPassword />,
     },
     {
-      path: "/profile/edit-admin/:id",
+      path: "/profile/edit-admin",
       element: <EditAdmin />,
     },
     {

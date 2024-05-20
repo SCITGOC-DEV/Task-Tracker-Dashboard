@@ -7,15 +7,16 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { getAdminByID } from "../graphql/query/getAdminByID";
 import { toast } from "react-toastify";
 import { adminChangePassword } from "../graphql/mutation/adminChangePassword";
+import useAuth from "../hooks/useAuth";
 
 const ChangeAdminPassword = () => {
   const { currentColor } = useStateContext();
-  const { id } = useParams();
+  const { userId } = useAuth();
   const navigate = useNavigate();
 
   const { data, loading } = useQuery(getAdminByID, {
     variables: {
-      id,
+      id: userId,
     },
   });
   const admin = data?.admin_by_pk ? data?.admin_by_pk : null;
@@ -47,8 +48,13 @@ const ChangeAdminPassword = () => {
         username,
       },
       onCompleted: ({ adminChangePassword }) => {
-        navigate("/profile");
-        toast.success(adminChangePassword.message);
+        if (adminChangePassword.error === 0) {
+          navigate("/profile");
+          toast.success(adminChangePassword.message);
+        } else {
+          toast.error(adminChangePassword.message);
+          return;
+        }
       },
       onError: (error) => {
         toast.error(error.message);

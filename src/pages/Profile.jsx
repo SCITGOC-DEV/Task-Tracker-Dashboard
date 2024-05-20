@@ -17,10 +17,10 @@ const Profile = () => {
   });
   const admin = data?.admin_by_pk ? data?.admin_by_pk : null;
   const handleChangePassword = () => {
-    navigate(`/profile/change-password/${4}`);
+    navigate(`/profile/change-password`);
   };
   const handleEditAdmin = () => {
-    navigate(`/profile/edit-admin/${4}`);
+    navigate(`/profile/edit-admin`);
   };
 
   return (
