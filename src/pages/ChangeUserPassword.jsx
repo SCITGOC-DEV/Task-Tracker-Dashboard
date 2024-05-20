@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "@apollo/client";
 import { changeUserPassword } from "../graphql/mutation/userChangePassword";
 import { useForm } from "react-hook-form";
 import { getUserByID } from "../graphql/query/getUserByID";
-import { useActionData, useNavigate, useParams } from "react-router-dom";
+import { Link, useActionData, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const ChangeUserPassword = () => {
@@ -64,6 +64,13 @@ const ChangeUserPassword = () => {
   return (
     <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
       <Header title={"User Change Password"} category="Pages" />
+      <Link
+        to={"/users"}
+        className="inline-block p-3 rounded-lg mb-4 text-white hover:opacity-95"
+        style={{ background: currentColor }}
+      >
+        Back
+      </Link>
       <div className="w-full flex flex-col justify-center items-center">
         <form
           onSubmit={handleSubmit(onSubmit)}

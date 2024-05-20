@@ -17,6 +17,7 @@ const Locations = () => {
   const offset = currentPage * itemsPerPage;
   const { data } = useQuery(getAllLocations, {
     variables: { offset, limit: itemsPerPage },
+    fetchPolicy: "network-only",
   });
   const totalItems = data?.location_aggregate.aggregate.count;
   const pageCount = Math.ceil(totalItems / itemsPerPage);

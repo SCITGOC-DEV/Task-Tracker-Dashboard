@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
 export const getAllUsers = gql`
-  query MyQuery($offset: Int!, $limit: Int!) {
+  query MyQuery($offset: Int, $limit: Int) {
     users(order_by: { created_at: desc }, limit: $limit, offset: $offset) {
       email
       id

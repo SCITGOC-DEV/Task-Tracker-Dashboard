@@ -16,6 +16,7 @@ const User = () => {
 
   const { data } = useQuery(getAllUsers, {
     variables: { offset, limit: itemsPerPage },
+    fetchPolicy: "network-only",
   });
 
   const totalItems = data?.users_aggregate.aggregate.count;
@@ -29,21 +30,21 @@ const User = () => {
     <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
       <Header title={"Users"} category="Pages" />
       <div className="flex flex-row justify-end">
-        {/* <Link
+        <Link
           to={"/users/add"}
           className="inline-block p-3 rounded-lg mb-4 text-white hover:opacity-95"
           style={{ background: currentColor }}
         >
           Add User
-        </Link> */}
-        <Button
+        </Link>
+        {/* <Button
           disabled={true}
           style={{ background: currentColor }}
           size="large"
           className="mb-6"
         >
           Add User
-        </Button>
+        </Button> */}
       </div>
       <div className="flex flex-col dark:bg-box-dark-bg bg-white rounded-lg">
         <div className="overflow-x-auto">

@@ -17,6 +17,7 @@ const Task = () => {
 
   const { data } = useQuery(getAllTasks, {
     variables: { offset, limit: itemsPerPage },
+    fetchPolicy: "network-only",
   });
 
   const totalItems = data?.task_name_aggregate.aggregate.count;
@@ -28,20 +29,17 @@ const Task = () => {
 
   const [deleteTask] = useMutation(DELETE_TASK);
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     const confirm = window.confirm("Do you really want to delete this Task?");
     if (confirm) {
-      deleteTask({
+      await deleteTask({
         variables: {
           id,
         },
         refetchQueries: [
           {
             query: getAllTasks,
-            variables: {
-              offset: 0,
-              limit: totalItems,
-            },
+            variables: {},
             awaitRefetchQueries: true,
           },
         ],
