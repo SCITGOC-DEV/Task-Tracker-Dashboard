@@ -61,7 +61,7 @@ const Locations = () => {
       <div className="flex flex-col dark:bg-box-dark-bg bg-white rounded-lg">
         <div className="overflow-x-auto">
           <div className="p-1.5 w-full inline-block align-middle">
-            <div className="overflow-hidden rounded-lg">
+            <div className="overflow-x-auto rounded-lg">
               <table className="min-w-full divide-y dark:divide-gray-600 divide-gray-200">
                 <thead>
                   <tr>
