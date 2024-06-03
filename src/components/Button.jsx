@@ -19,7 +19,7 @@ const Button = React.forwardRef((props, ref) => {
     fullWidth && "w-full",
     "uppercase font-bold rounded text-white",
     disabled &&
-      "bg-gray-600 bg-opacity-40 cursor-not-allowed text-gray-400 border-transparent ",
+      "bg-gray-600 bg-opacity-40 cursor-not-allowed text-gray-400 border-transparent",
     {
       "px-2 py-1": size === "small",
       "px-4 py-2": size === "medium",

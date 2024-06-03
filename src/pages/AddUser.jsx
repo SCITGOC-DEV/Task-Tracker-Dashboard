@@ -33,7 +33,6 @@ const AddUser = () => {
       },
       onCompleted: ({ UserRegister }) => {
         if (UserRegister.error === 0) {
-          setAuthenticated(UserRegister.accessToken);
           navigate("/users");
           toast.success(UserRegister.message);
         } else {

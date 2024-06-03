@@ -88,7 +88,7 @@ const AddLocation = () => {
             fullWidth
             size="large"
           >
-            {loading ? "Creating..." : "Save"}
+            {loading ? "Please wait..." : "Save"}
           </Button>
         </form>
       </div>

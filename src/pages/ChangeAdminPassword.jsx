@@ -3,7 +3,7 @@ import { Button, Header, PasswordTextField, TextField } from "../components";
 import { useStateContext } from "../contexts/ContextProvider";
 import { useMutation, useQuery } from "@apollo/client";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getAdminByID } from "../graphql/query/getAdminByID";
 import { toast } from "react-toastify";
 import { adminChangePassword } from "../graphql/mutation/adminChangePassword";
@@ -14,14 +14,13 @@ const ChangeAdminPassword = () => {
   const { userId } = useAuth();
   const navigate = useNavigate();
 
-  const { data, loading } = useQuery(getAdminByID, {
+  const { data } = useQuery(getAdminByID, {
     variables: {
       id: userId,
     },
   });
   const admin = data?.admin_by_pk ? data?.admin_by_pk : null;
-  const [changePassword, { loading: mutationLoading }] =
-    useMutation(adminChangePassword);
+  const [changePassword, { loading }] = useMutation(adminChangePassword);
   const {
     register,
     handleSubmit,
@@ -84,7 +83,7 @@ const ChangeAdminPassword = () => {
               })}
               placeholder="Username"
               fullWidth
-              disabled={!loading}
+              disabled={true}
             />
           </div>
           <div className="mb-4">
@@ -134,9 +133,8 @@ const ChangeAdminPassword = () => {
             style={{ background: currentColor }}
             fullWidth
             size="large"
-            text={loading ? "Creating..." : "Save"}
           >
-            Save
+            {loading ? "Please wait..." : "Save"}
           </Button>
         </form>
       </div>

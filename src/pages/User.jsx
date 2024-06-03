@@ -121,10 +121,10 @@ const User = () => {
                           {user.email}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          {user.phone}
+                          {user.phone ? user.phone : "##"}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          {user.address}
+                          {user.address ? user.address : "##"}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
                           {formatDate(user.created_at)}
