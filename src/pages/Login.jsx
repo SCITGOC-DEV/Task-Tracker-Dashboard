@@ -16,6 +16,9 @@ import { useStateContext } from "../contexts/ContextProvider";
 import { Button, PasswordTextField, TextField } from "../components";
 import logo from "../data/logo.png";
 import { adminSignin } from "../graphql/mutation/adminSignin";
+import AppTextField from "../components/AppTextField";
+import {ActivityIndicator} from "react-native-web";
+import styles from "../components/Styles";
 const Login = () => {
   const { currentColor } = useStateContext();
   const navigate = useNavigate();
@@ -49,13 +52,16 @@ const Login = () => {
         password,
       },
       onCompleted: ({ AdminLogIn }) => {
-        if (AdminLogIn.error === 0) {
-          setAuthenticated(AdminLogIn.accessToken);
-          navigate("/");
-          toast.success("Welcome Back!");
-        } else {
-          toast.error(AdminLogIn.message);
-        }
+
+        setTimeout(() => {
+          if (AdminLogIn.error === 0) {
+            setAuthenticated(AdminLogIn.accessToken);
+            navigate("/");
+            toast.success("Welcome Back!");
+          } else {
+            toast.error(AdminLogIn.message);
+          }
+        }, 500);
       },
       onError: (error) => {
         console.log(error.message);
@@ -64,19 +70,22 @@ const Login = () => {
   };
   return (
     <div className="flex dark:bg-secondary-dark-bg bg-light-gray flex-col justify-center items-center h-screen px-4">
-      <div className="bg-white sm:max-w-[400px] max-w-full w-full dark:bg-main-dark-bg p-6 rounded">
+      <div className="bg-white sm:max-w-[400px] max-w-full w-full dark:bg-main-dark-bg p-6 rounded-lg">
         <div className="flex flex-row justify-center items-center">
           <Link to="/" className="dark:bg-transparent inline-block">
             <img src={logo} alt="logo" className="w-24 h-24 object-contain" />
           </Link>
         </div>
         <h1 className="text-2xl text-center mt-4 font-bold  dark:text-white text-black/60 uppercase">
-          Signin
+          Welcome
         </h1>
+        <p className="text-lg mb-8 text-gray-600 text-center" >
+          Sign In your account
+        </p>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <h4 className="mb-2 dark:text-white text-black/80">Username</h4>
-            <TextField
+            <AppTextField
               {...register("username", {
                 required: "username is required field",
                 maxLength: {
@@ -100,7 +109,7 @@ const Login = () => {
               }
             />
           </div>
-          <div className="mb-4">
+          <div className="mb-12">
             <h4 className="mb-2 dark:text-white text-black/80">Password</h4>
             <PasswordTextField
               {...register("password", {
@@ -125,13 +134,18 @@ const Login = () => {
           </div>
           <div className="mb-4">
             <Button
-              type="submit"
-              style={{ background: currentColor }}
-              fullWidth
-              size="large"
-              disabled={loading || !(isValid && isDirty)}
+                type="submit"
+                className="rounded-lg"
+                style={{ background: currentColor }}
+                fullWidth
+                size="large"
+                disabled={loading || !(isValid && isDirty)}
             >
-              {loading ? "Please Wait..." : "Login"}
+              {loading ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                  'Submit' // Replace 'Submit' with the desired text or component
+              )}
             </Button>
           </div>
         </form>

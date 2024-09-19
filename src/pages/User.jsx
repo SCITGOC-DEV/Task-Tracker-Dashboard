@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import { Button, Header, PaginationButtons } from "../components";
 import { useQuery } from "@apollo/client";
 import { getAllUsers } from "../graphql/query/getAllUsers";
@@ -8,11 +8,13 @@ import { formatDate } from "../data/dummy";
 import { MdOutlineVpnKey, MdOutlineEditCalendar } from "react-icons/md";
 
 import IconButton from "../components/IconButton";
+import Loading from "../components/Loading";
 const User = () => {
   const { currentColor } = useStateContext();
   const [currentPage, setCurrentPage] = React.useState(0);
   const itemsPerPage = 10;
   const offset = currentPage * itemsPerPage;
+  const [loading, setLoading] = useState(false);
 
   const { data } = useQuery(getAllUsers, {
     variables: { offset, limit: itemsPerPage },
@@ -25,6 +27,8 @@ const User = () => {
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
   };
+
+  if(totalItems == null) return <Loading/>
 
   return (
     <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">

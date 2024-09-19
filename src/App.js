@@ -3,6 +3,7 @@ import { BrowserRouter } from "react-router-dom";
 import Routes from "./routes";
 import "./App.css";
 import { useStateContext } from "./contexts/ContextProvider";
+import styles from "./components/Styles";
 const App = () => {
   const { setCurrentColor, setCurrentMode, currentMode } = useStateContext();
 
@@ -16,7 +17,7 @@ const App = () => {
   }, [setCurrentColor, setCurrentMode]);
 
   return (
-    <div className={currentMode === "Dark" ? "dark" : ""}>
+    <div style={styles.fontFamily} className={currentMode === "Dark" ? "dark" : ""}>
       <BrowserRouter>
         <Routes />
       </BrowserRouter>

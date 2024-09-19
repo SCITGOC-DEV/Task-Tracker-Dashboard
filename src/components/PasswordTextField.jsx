@@ -2,6 +2,7 @@ import { FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
 import React from 'react';
 import IconButton from './IconButton';
 import TextField from './TextField';
+import {IoLockClosed} from "react-icons/io5";
 
 const PasswordTextField = React.forwardRef(
   ({ placeholder, ...others }, ref) => {
@@ -25,7 +26,7 @@ const PasswordTextField = React.forwardRef(
         placeholder={placeholder || 'Password'}
         type={passwordFieldType}
         InputProps={{
-          startAdornment: <FaLock className="text-gray-400" />,
+          startAdornment: <IoLockClosed className="text-gray-400" />,
           endAdornment: (
             <IconButton onClick={handleChangePasswordFieldType} type="button">
               {passwordFieldType === 'text' ? (
