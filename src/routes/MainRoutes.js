@@ -17,11 +17,23 @@ import {
   TrackingTask,
   User,
 } from "../pages";
+import AddInventoryCategory from "../pages/AddInventoryCategory";
+import UpdateInventoryCategory from "../pages/EditInventoryCategory";
+import { InventoryCategories } from "../pages/InventoryCategories";
+import ProjectAdminHome from "../pages/project-admin/ProjectAdminHome";
+import PageRoutes from "../utils/PageRoutes";
+import Routes from "../utils/PageRoutes";
+
+
 
 const MainRoutes = {
   path: "/",
   element: <MainLayout />,
   children: [
+    {
+      path: "/project-admin",
+      element: <ProjectAdminHome />,
+    },
     {
       path: "/",
       element: <Dashboard />,
@@ -86,6 +98,18 @@ const MainRoutes = {
       path: "/trackings/:id",
       element: <TrackingDetail />,
     },
+    {
+      path: "/inventory-categories",
+      element: <InventoryCategories/>
+    },
+    {
+      path: PageRoutes.AddInventoryCategory,
+      element: <AddInventoryCategory/>
+    },
+    {
+      path: PageRoutes.EditInventoryCategory,
+      element: <UpdateInventoryCategory/>
+    }
   ],
 };
 

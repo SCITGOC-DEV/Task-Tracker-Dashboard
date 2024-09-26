@@ -12,9 +12,21 @@ const useAuth = () => {
   const navigate = useNavigate();
   const hasLoggedInCookie = () => {
     const isLoggedInCookie = Cookies.get(IS_LOGGED_IN_KEY);
+    console.log('cookie: ', isLoggedInCookie)
     return Boolean(isLoggedInCookie) && isLoggedInCookie === IS_LOGGED_IN_VALUE;
   };
   const isUser = hasLoggedInCookie();
+
+  function getRole () {
+    const token = window.localStorage.getItem(ACCESS_TOKEN)
+        ? window.localStorage.getItem(ACCESS_TOKEN)
+        : null;
+      if (token) {
+        const user = jose.decodeJwt(token);
+        const role = user["https://hasura.io/jwt/claims"]["x-hasura-default-role"];
+        return role
+      } else return null
+  }
 
   function getUserData() {
     if (isUser) {
@@ -23,13 +35,13 @@ const useAuth = () => {
         : null;
       if (token) {
         const user = jose.decodeJwt(token);
-        const role =
-          user["https://hasura.io/jwt/claims"]["x-hasura-default-role"];
-        if (role === "admin") {
+        const role = user["https://hasura.io/jwt/claims"]["x-hasura-default-role"];
           return user.user_id;
-        } else {
-          return null;
-        }
+        // if (role === "admin") {
+        //   return user.user_id;
+        // } else {
+        //   return null;
+        // }
       } else {
         return null;
       }
@@ -43,6 +55,7 @@ const useAuth = () => {
 
   return {
     userId: isUser ? getUserData() : null,
+    role: getRole(),
     logout,
   };
 };

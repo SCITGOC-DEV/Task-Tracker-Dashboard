@@ -1,12 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FiSettings } from "react-icons/fi";
 import { Sidebar, Navbar, ThemeSettings } from "../components";
 import { useStateContext } from "../contexts/ContextProvider";
 import useAuth from "../hooks/useAuth";
+import { links, projectAdminOptions } from "../data/dummy";
 
 const MainLayout = () => {
-  const { userId } = useAuth();
+  const { userId,role } = useAuth();
+  const [options, setOptions] = useState([])
   const navigate = useNavigate();
   const {
     setCurrentColor,
@@ -16,6 +18,11 @@ const MainLayout = () => {
     themeSettings,
     currentColor,
   } = useStateContext();
+
+  useEffect(() => {
+    if (role == "admin") setOptions(links)
+    else setOptions(projectAdminOptions)
+  },[role])
 
   React.useEffect(() => {
     if (userId === null) {
@@ -46,11 +53,11 @@ const MainLayout = () => {
       </div>
       {activeMenu ? (
         <div className="w-72 fixed sidebar dark:bg-secondary-dark-bg bg-white ">
-          <Sidebar />
+          <Sidebar options={options} />
         </div>
       ) : (
         <div className="w-0 dark:bg-secondary-dark-bg">
-          <Sidebar />
+          <Sidebar options={options}/>
         </div>
       )}
       <div

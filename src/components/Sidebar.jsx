@@ -6,7 +6,7 @@ import logo from "../data/logo.png";
 import { links } from "../data/dummy";
 import { useStateContext } from "../contexts/ContextProvider";
 
-const Sidebar = () => {
+const Sidebar = ({options}) => {
   const { currentColor, activeMenu, setActiveMenu, screenSize } =
     useStateContext();
 
@@ -43,7 +43,7 @@ const Sidebar = () => {
             </button>
           </div>
           <div className="mt-10 ">
-            {links.map((item) => (
+            {options.map((item) => (
               <div key={item.title}>
                 <p className="text-gray-400 dark:text-gray-400 m-3 mt-4 uppercase">
                   {item.title}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import {
@@ -19,13 +19,19 @@ import { adminSignin } from "../graphql/mutation/adminSignin";
 import AppTextField from "../components/AppTextField";
 import {ActivityIndicator} from "react-native-web";
 import styles from "../components/Styles";
+import Dropdown from "./Dropdown";
+import UserRole, { getUserRole } from "../utils/UserRole";
+import isAdmin from "../utils/JwtDecoder";
+
 const Login = () => {
   const { currentColor } = useStateContext();
   const navigate = useNavigate();
   const [login, { loading }] = useMutation(adminSignin);
+  const [role, setRole] = useState(getUserRole(UserRole.ADMIN))
 
   const setAuthenticated = (accessToken) => {
     if (!accessToken) return;
+    console.log(isAdmin(accessToken))
     Cookies.set(IS_LOGGED_IN_KEY, IS_LOGGED_IN_VALUE);
     window.localStorage.setItem(ACCESS_TOKEN, accessToken);
   };
@@ -45,11 +51,17 @@ const Login = () => {
     },
     resolver: yupResolver(validationSchema),
   });
+
+  const handleUserRoleSelected = (role) => {
+    console.log(getUserRole(role))
+    setRole(getUserRole(role))
+  }
+
   const onSubmit = ({ username, password }) => {
     login({
       variables: {
         admin_name: username,
-        password,
+        password: password
       },
       onCompleted: ({ AdminLogIn }) => {
 
@@ -62,7 +74,7 @@ const Login = () => {
             toast.error(AdminLogIn.message);
           }
         }, 500);
-      },
+      },  
       onError: (error) => {
         console.log(error.message);
       },

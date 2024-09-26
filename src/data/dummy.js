@@ -4,6 +4,7 @@ import { GoTasklist } from "react-icons/go";
 import { FiUsers } from "react-icons/fi";
 import { BsCurrencyDollar } from "react-icons/bs";
 import { GrLocation } from "react-icons/gr";
+import { BiCategoryAlt } from "react-icons/bi";
 import { MdOutlineDashboard } from "react-icons/md";
 import product5 from "./product5.jpg";
 import product6 from "./product6.jpg";
@@ -110,6 +111,49 @@ export const links = [
         name: "tracking tasks",
         href: "/trackings",
         icon: <AiOutlineSolution />,
+      },
+      {
+        name: "inventory categories",
+        href: "/inventory-categories",
+        icon: <BiCategoryAlt />,
+      },
+    ],
+  },
+];
+
+export const projectAdminOptions = [
+  {
+    title: "Dashboard",
+    links: [
+      {
+        name: "dashboard",
+        href: "/",
+        icon: <MdOutlineDashboard />,
+      },
+    ],
+  },
+  {
+    title: "Pages",
+    links: [
+      {
+        name: "users",
+        href: "/users",
+        icon: <FiUsers />,
+      },
+      {
+        name: "tasks",
+        href: "/tasks",
+        icon: <GoTasklist />,
+      },
+      {
+        name: "locations",
+        href: "/locations",
+        icon: <RiMapPin2Line />,
+      },
+      {
+        name: "inventory categories",
+        href: "/inventory-categories",
+        icon: <BiCategoryAlt />,
       },
     ],
   },
