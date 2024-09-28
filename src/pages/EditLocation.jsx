@@ -1,17 +1,13 @@
 import React from "react";
-import { Button, Header, TextField } from "../components";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { useStateContext } from "../contexts/ContextProvider";
-import { useForm } from "react-hook-form";
-import { useMutation, useQuery } from "@apollo/client";
-import { ADD_TASK } from "../graphql/mutation/addTask";
-import { toast } from "react-toastify";
-import { getAllTasks } from "../graphql/query/getAllTasks";
-import { getTaskByID } from "../graphql/query/getTaskByID";
-import { editTaskByID } from "../graphql/mutation/editTaskByID";
-import { getLocationByID } from "../graphql/query/getLocationByID";
-import { getAllLocations } from "../graphql/query/getAllLocatioins";
-import { editLocationByID } from "../graphql/mutation/editLocationByID";
+import {Button, Header, TextField} from "../components";
+import {Link, useNavigate, useParams} from "react-router-dom";
+import {useStateContext} from "../contexts/ContextProvider";
+import {useForm} from "react-hook-form";
+import {useMutation, useQuery} from "@apollo/client";
+import {toast} from "react-toastify";
+import {getLocationByID} from "../graphql/query/getLocationByID";
+import {getAllLocations} from "../graphql/query/getAllLocatioins";
+import {editLocationByID} from "../graphql/mutation/editLocationByID";
 
 const EditLocation = () => {
   const { currentColor } = useStateContext();

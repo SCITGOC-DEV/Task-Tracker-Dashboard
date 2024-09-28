@@ -12,7 +12,6 @@ const useAuth = () => {
   const navigate = useNavigate();
   const hasLoggedInCookie = () => {
     const isLoggedInCookie = Cookies.get(IS_LOGGED_IN_KEY);
-    console.log('cookie: ', isLoggedInCookie)
     return Boolean(isLoggedInCookie) && isLoggedInCookie === IS_LOGGED_IN_VALUE;
   };
   const isUser = hasLoggedInCookie();

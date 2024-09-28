@@ -17,10 +17,10 @@ const DataTable = ({ headings, contents, onEditClick, onDeleteClick, showDeleteO
     }
 
     return (
-        <div className="flex flex-col dark:bg-box-dark-bg bg-white rounded-lg border">
-            <div className="overflow-x-auto">
-                <div className="min-w-full divide-y dark:divide-gray-600 divide-gray-200">
-                    <table className="min-w-full">
+        <div className="flex flex-col max-w-full dark:bg-box-dark-bg bg-white rounded-lg border">
+            <div className="overflow-x-auto"> {/* Enable horizontal scrolling for the table */}
+                <div className="max-w-full divide-y dark:divide-gray-600 divide-gray-200">
+                    <table className="min-w-full max-w-full"> {/* Set max width to prevent overflow */}
                         <thead className="border-b bg-gray-50 dark:bg-gray-800">
                             <tr>
                                 {headings.map((item, index) => (
@@ -50,12 +50,11 @@ const DataTable = ({ headings, contents, onEditClick, onDeleteClick, showDeleteO
                                         <IconButton className="flex justify-center" variant="text" onClick={() => handleOnEditClick(row[0])}>
                                             <MdModeEdit />
                                         </IconButton>
-                                        {
-                                            showDeleteOption ? (
-                                                <IconButton className="flex justify-center" variant="text" onClick={() => onDeleteClick(row[0])}>
-                                                    <MdDelete />
-                                                </IconButton>) : <div></div>
-                                        }
+                                        {showDeleteOption && (
+                                            <IconButton className="flex justify-center" variant="text" onClick={() => onDeleteClick(row[0])}>
+                                                <MdDelete />
+                                            </IconButton>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
@@ -64,6 +63,7 @@ const DataTable = ({ headings, contents, onEditClick, onDeleteClick, showDeleteO
                 </div>
             </div>
         </div>
+
     );
 };
 

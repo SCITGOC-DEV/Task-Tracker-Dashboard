@@ -3,15 +3,18 @@ import { GoTasklist } from "react-icons/go";
 
 import { FiUsers } from "react-icons/fi";
 import { BsCurrencyDollar } from "react-icons/bs";
-import { GrLocation } from "react-icons/gr";
+import {GrLocation, GrTasks} from "react-icons/gr";
 import { BiCategoryAlt } from "react-icons/bi";
-import { MdOutlineDashboard } from "react-icons/md";
+import { MdInventory, MdOutlineDashboard } from "react-icons/md";
 import product5 from "./product5.jpg";
 import product6 from "./product6.jpg";
 import product7 from "./product7.jpg";
 import { format } from "date-fns";
 import { RiMapPin2Line } from "react-icons/ri";
-import { AiOutlineSolution } from "react-icons/ai";
+import {AiOutlineFundProjectionScreen, AiOutlineHistory, AiOutlineProject, AiOutlineSolution} from "react-icons/ai";
+import PageRoutes from "../utils/PageRoutes";
+import { TbChartHistogram } from "react-icons/tb";
+
 export const formatDate = (dateString) => {
   const date = new Date(dateString);
   return format(date, "MM/dd/yyyy/hh:mm a"); // Customize the format as needed
@@ -103,6 +106,11 @@ export const links = [
         icon: <GoTasklist />,
       },
       {
+        name: "task inventory",
+        href: PageRoutes.TaskInventory,
+        icon: <GrTasks />,
+      },
+      {
         name: "locations",
         href: "/locations",
         icon: <RiMapPin2Line />,
@@ -116,6 +124,21 @@ export const links = [
         name: "inventory categories",
         href: "/inventory-categories",
         icon: <BiCategoryAlt />,
+      },
+      {
+        name: "inventory history",
+        href: PageRoutes.InventoryHistory,
+        icon: <TbChartHistogram />,
+      },
+      {
+        name: "projects",
+        href: PageRoutes.Projects,
+        icon: <AiOutlineProject />,
+      },
+      {
+        name: "project inventories",
+        href: PageRoutes.ProjectInventory,
+        icon: <AiOutlineFundProjectionScreen />,
       },
     ],
   },
@@ -146,6 +169,11 @@ export const projectAdminOptions = [
         icon: <GoTasklist />,
       },
       {
+        name: "task inventory",
+        href: PageRoutes.TaskInventory,
+        icon: <GrTasks />,
+      },
+      {
         name: "locations",
         href: "/locations",
         icon: <RiMapPin2Line />,
@@ -154,6 +182,21 @@ export const projectAdminOptions = [
         name: "inventory categories",
         href: "/inventory-categories",
         icon: <BiCategoryAlt />,
+      },
+      {
+        name: "inventory history",
+        href: PageRoutes.InventoryHistory,
+        icon: <TbChartHistogram />,
+      },
+      {
+        name: "projects",
+        href: PageRoutes.Projects,
+        icon: <AiOutlineProject />,
+      },
+      {
+        name: "project inventories",
+        href: PageRoutes.ProjectInventory,
+        icon: <AiOutlineFundProjectionScreen />,
       },
     ],
   },
