@@ -17,6 +17,9 @@ import PageRoutes from "../utils/PageRoutes";
 import DataTable from "../components/DataTable";
 import AlertDialog from "../components/AlertDialog";
 import Pagination from "../components/Pagination";
+import AlertSnackbar from "../components/AlertSnackbar";
+import {Md1K, MdDeck, MdDelete, MdModeEdit, MdOutlineDelete} from "react-icons/md";
+import {ActionType} from "../utils/Constants";
 const Task = () => {
   const { currentColor } = useStateContext();
   const navigate = useNavigate()
@@ -98,6 +101,34 @@ const Task = () => {
     "End Date & Time"
   ];
 
+  const actions = [
+    {
+      type: ActionType.Icon,
+      actions: [
+        {
+          label: "Edit",
+          icon: <MdModeEdit/>,
+          onClick: (id) => handleOnEditClick(id),
+        },
+        {
+          label: "Delete",
+          icon: <MdDelete/>,
+          onClick: (id) => handleOnDeleteClick(id),
+        }
+      ]
+    },
+    {
+      type: ActionType.Dropdown,
+      actions: [
+        {
+          label: "Add Inventory To Task",
+          icon: <MdDeck/>,
+          onClick: (id) => navigate(PageRoutes.InventoryHistory),
+        }
+      ]
+    }
+  ]
+
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
   };
@@ -141,8 +172,13 @@ const Task = () => {
                 showDeleteOption={role == "admin"}
                 headings={headings}
                 contents={contents}
+                actions={actions}
                 onEditClick={handleOnEditClick}
                 onDeleteClick={handleOnDeleteClick}
+                errorProps={{
+                  name: "No Tasks Found",
+                  description: "You haven't added any tasks yet. Create a new task to get started.",
+                }}
             />
 
             <AlertDialog

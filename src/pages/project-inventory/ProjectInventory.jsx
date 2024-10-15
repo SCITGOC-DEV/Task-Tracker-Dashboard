@@ -20,6 +20,8 @@ import TextFieldWithSuggestions, { InputFieldWithSuggestion } from "../../compon
 import { InputButton } from "../../components/InnputButton";
 import { InputWithError } from "../../components/InputWithError";
 import {DELETE_PROJECT_INVENTORY, GET_PROJECT_INVENTORIES} from "../../graphql/query/projectInventoryQueries";
+import {ActionType} from "../../utils/Constants";
+import {MdDelete, MdModeEdit} from "react-icons/md";
 
 export function ProjectInventory() {
     const { currentColor } = useStateContext();
@@ -70,7 +72,6 @@ export function ProjectInventory() {
                     inventory.inventory?.email_address || "N/A",                    // Email Address
                     inventory.inventory?.country || "N/A",                          // Country
                     inventory.inventory?.contact_number || "N/A",                   // Contact Number
-                    inventory.inventory?.address || "N/A",                          // Address
                     inventory.inventory?.quantity || "N/A",                         // Quantity
                     inventory.inventory?.scit_control_number || "N/A",              // SCIT Control Number
                     inventory.inventory?.serial_number_start || "N/A"               // Serial Number Start
@@ -102,11 +103,28 @@ export function ProjectInventory() {
         "Email Address",
         "Country",
         "Contact Number",
-        "Address",
         "Quantity",
         "SCIT Control Number",
         "Serial Number Start"
     ];
+
+    const actions = [
+        {
+            type: ActionType.Icon,
+            actions: [
+                {
+                    label: "Edit",
+                    icon: <MdModeEdit/>,
+                    onClick: (id) => handleOnEditClick(id),
+                },
+                {
+                    label: "Delete",
+                    icon: <MdDelete/>,
+                    onClick: (id) => handleOnDeleteClick(id),
+                }
+            ]
+        }
+    ]
 
     const handlePageClick = ({ selected }) => {
         setCurrentPage(selected);
@@ -151,8 +169,13 @@ export function ProjectInventory() {
                     showDeleteOption={role == "admin"}
                     headings={headings}
                     contents={contents}
+                    actions={actions}
                     onEditClick={handleOnEditClick}
                     onDeleteClick={handleOnDeleteClick}
+                    errorProps={{
+                        name: 'No Project Inventories Available',
+                        description: 'There are currently no inventories associated with this project. Please add items to see them here.',
+                    }}
                 />
 
                 <AlertDialog

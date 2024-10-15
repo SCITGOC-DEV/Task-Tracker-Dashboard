@@ -22,6 +22,8 @@ import {
     GET_INVENTORY_DATA_BY_SCIT,
     GET_PROJECT_NAMES
 } from "../../graphql/query/projectInventoryQueries";
+import AppDropdown from "../../components/AppDropdown";
+import {AppCheckBox} from "../../components/AppCheckBox";
 
 const AddProjectInventory = () => {
     const { currentColor } = useStateContext();
@@ -34,9 +36,11 @@ const AddProjectInventory = () => {
     const today = new Date().toISOString();
 
     // State variables for fields
+    const [projectId, setProjectId] = useState(null)
     const [project, setProject] = useState(null);
     const [projectError, setProjectError] = useState("");
 
+    const [inventoryId, setInventoryId] = useState(null)
     const [inventory, setInventory] = useState(null);
     const [inventoryError, setInventoryError] = useState("");
 
@@ -46,11 +50,13 @@ const AddProjectInventory = () => {
     const [usedQuantity, setUsedQuantity] = useState("");
     const [usedQuantityError, setUsedQuantityError] = useState("");
 
-    const [status, setStatus] = useState("");
+    const [status, setStatus] = useState(InventoryStatusWithStatus[0]);
     const [formError, setFormError] = useState("");
 
     const [projectNames, setProjectNames] = useState([]);
     const [inventories, setInventories] = useState([]);
+
+    const [isReturn, setIsReturn] = useState(false)
 
     const [getProjectNames] = useLazyQuery(GET_PROJECT_NAMES, {
         onCompleted: data => {
@@ -64,8 +70,8 @@ const AddProjectInventory = () => {
 
     const [getInventories] = useLazyQuery(GET_INVENTORY_DATA_BY_SCIT, {
         onCompleted: data => {
-            console.log(data.project_inventories.map(inventory => inventory.inventory.scit_control_number))
-            setInventories(data.project_inventories)
+            console.log(data.inventories.map(inventory => inventory.scit_control_number))
+            setInventories(data.inventories)
         },
         onError: (error) => {
             console.log(error)
@@ -99,7 +105,7 @@ const AddProjectInventory = () => {
         }
 
         // Validate Inventory field
-        if (inventory == null) {
+        if (inventoryId == null) {
             setInventoryError("Inventory is required.");
             valid = false;
         } else {
@@ -138,12 +144,12 @@ const AddProjectInventory = () => {
         // Submit form if valid
         if (validateForm()) {
             const variables = {
-                project_id: project,
-                inventory_id: inventory,
+                project_id: projectId,
+                inventory_id: inventoryId,
                 total_qty: Number(totalQuantity),
                 used_qty: Number(usedQuantity),
                 status: status,
-                is_return: false
+                is_return: isReturn
             }
             console.log(variables)
             setLoading(true)
@@ -191,8 +197,8 @@ const AddProjectInventory = () => {
                         suggestions={projectNames.map(project => project.project_name)}
                         onChange={(value) => {
                             const project = projectNames.find(item => item.project_name == value)
-                            setProject(project?.id)
-
+                            setProjectId(project?.id)
+                            setProject(value)
                         }}
                         onValueChange={handleOnProjectChange}
                         error={projectError}
@@ -204,13 +210,13 @@ const AddProjectInventory = () => {
                         title="Inventory *"
                         placeholder="Select or Enter Inventory"
                         value={inventory}
-                        suggestions={inventories.map(inventory => inventory.inventory.scit_control_number)}
+                        suggestions={inventories.map(inventory => inventory.scit_control_number)}
                         onChange={(value) => {
                             const inventoryItem = inventories?.find(
-                                item => item.inventory?.scit_control_number === value
+                                item => item.scit_control_number === value
                             );
-                            setInventory(inventoryItem?.inventory_id)
-                            console.log(inventory)
+                            setInventoryId(inventoryItem?.id)
+                            setInventory(value)
                         }}
                         onValueChange={handleOnInventoryChange}
                         error={inventoryError}
@@ -236,16 +242,16 @@ const AddProjectInventory = () => {
                         error={usedQuantityError}
                     />
 
-                    {/* Status (with suggestions) */}
-                    <InputFieldWithSuggestion
-                        className="min-w-full"
+                    <AppDropdown
                         title="Status"
-                        placeholder="Select Status"
                         value={status}
-                        suggestions={InventoryStatusWithStatus}
-                        onChange={(value) => setStatus(value)}
-                        onValueChange={() => {}}
-                        error=""
+                        options={InventoryStatusWithStatus}
+                        onSelected={(value) => setStatus(value)}/>
+
+                    <AppCheckBox
+                        value={isReturn}
+                        title={"Is Return"}
+                        onChange={(value) => setIsReturn(!isReturn)}
                     />
 
                     {/* Submit Button */}

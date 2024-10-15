@@ -21,7 +21,7 @@ import AddInventoryCategory from "../pages/AddInventoryCategory";
 import UpdateInventoryCategory from "../pages/EditInventoryCategory";
 import AddInventory from "../pages/inventory/AddInventory";
 import { InventoryRecords } from "../pages/inventory/InventoryRecords";
-import AddInventoryHistory from "../pages/inventory_history/AddInventoryHistory";
+import AddInventoryToTask from "../pages/inventory_history/AddInventoryToTask";
 import { InventoryHistory } from "../pages/inventory_history/InventoryHistory";
 import { InventoryCategories } from "../pages/InventoryCategories";
 import ProjectAdminHome from "../pages/project-admin/ProjectAdminHome";
@@ -36,6 +36,7 @@ import EditProjectInventory from "../pages/project-inventory/EditProjectInventor
 import {TaskInventory} from "../pages/task-inventory/TaskInventory";
 import AddTaskInventory from "../pages/task-inventory/AddTaskInventory";
 import EditTaskInventory from "../pages/task-inventory/EditTaskInventory";
+import UpdateInventory from "../pages/inventory/UpdateInventory";
 
 
 const MainRoutes = {
@@ -144,12 +145,16 @@ const MainRoutes = {
       element: <InventoryRecords/>
     },
     {
+      path: PageRoutes.UpdateInventory,
+      element: <UpdateInventory/>
+    },
+    {
       path: PageRoutes.InventoryHistory,
       element: <InventoryHistory/>
     },
     {
       path: PageRoutes.AddInventoryHistory,
-      element: <AddInventoryHistory/>
+      element: <AddInventoryToTask/>
     },
     {
       path: PageRoutes.Projects,

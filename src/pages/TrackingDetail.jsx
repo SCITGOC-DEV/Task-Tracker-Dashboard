@@ -1,5 +1,5 @@
 import { useQuery } from "@apollo/client";
-import React from "react";
+import React, {useEffect} from "react";
 import { useParams } from "react-router-dom";
 import { getTrackingByID } from "../graphql/query/getTrackingByID";
 import { formatDate } from "../data/dummy";
@@ -8,11 +8,16 @@ import { useStateContext } from "../contexts/ContextProvider";
 const TrackingDetail = () => {
   const { currentColor } = useStateContext();
   const { id } = useParams();
-  const { data, loading } = useQuery(getTrackingByID, {
+  const { data, loading, error } = useQuery(getTrackingByID, {
     variables: {
       id,
     },
   });
+
+  useEffect(() => {
+    console.log(error)
+  },[error])
+
   const tracking = data?.tracking_by_pk ? data?.tracking_by_pk : null;
   if (loading) {
     return (

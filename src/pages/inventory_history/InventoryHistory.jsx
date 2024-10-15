@@ -47,6 +47,7 @@ export function InventoryHistory() {
         },
         onError: (error) => {
             setLoading(false)
+            console.log(error.message)
             toast.error(error.message);
         },
     })
@@ -59,7 +60,6 @@ export function InventoryHistory() {
                 const result = data.task_inventories.map(item => [
                     item.task.task_name || "N/A",                    // Task name
                     item.task.project.project_name || "N/A",         // Project name
-                    item.inventory.serial_number || "N/A",           // Serial number
                     item.inventory.serial_number_end || "N/A",       // Serial number end
                     item.inventory.serial_number_start || "N/A",     // Serial number start
                     item.inventory.inventory_category.model_type || "N/A"  // Model type
@@ -67,11 +67,12 @@ export function InventoryHistory() {
                 setContents(result);
                 setTotalItems(data.total.aggregate.count);
                 setPageCount(Math.ceil(data.total.aggregate.count / itemsPerPage));
-            }, 600)
+            }, 500)
         },
         onError: (error) => {
             setLoading(false);
             console.error("Error fetching categories: ", error);
+            toast.error(error.message)
         }
     });
 
@@ -84,7 +85,6 @@ export function InventoryHistory() {
 
     const headings = [
         "SCIT Control Number",   // Corresponds to scit_control_number
-        "Serial Number",          // Corresponds to serial_number
         "Serial Number End",      // Corresponds to serial_number_end
         "Serial Number Start",     // Corresponds to serial_number_start
         "Project Name",           // Corresponds to project_name
@@ -97,7 +97,6 @@ export function InventoryHistory() {
     };
 
     const handleOnEditClick = (categoryId) => {
-        //console.log(id)
         navigate(`/inventory-categories/edit/${categoryId}`)
     }
 
@@ -117,10 +116,9 @@ export function InventoryHistory() {
 
     return (
 
-
         loading ? (<Loading />) : (
             <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
-                <Header title={"Inventory History"} category="Pages" />
+                <Header title={"Add Inventory To Task"} category="Pages" />
                 {
                     (role == "admin") ? (
                         <div className="flex flex-row justify-end">
@@ -140,6 +138,10 @@ export function InventoryHistory() {
                     contents={contents}
                     onEditClick={handleOnEditClick}
                     onDeleteClick={handleOnDeleteClick}
+                    errorProps={{
+                        name: 'No Inventory History Available',
+                        description: 'It seems there are no records in your inventory history. Please add items to see them here.',
+                    }}
                 />
 
                 <AlertDialog

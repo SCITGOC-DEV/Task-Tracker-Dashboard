@@ -45,6 +45,7 @@ export const GET_PROJECT_INVENTORY_BY_ID = gql`
         quantity
         scit_control_number
         serial_number_start
+        id
       }
       total_qty
     used_qty
@@ -71,11 +72,9 @@ query MyQuery ($query: String!) {
 
 export const GET_INVENTORY_DATA_BY_SCIT = gql `
 query MyQuery($query: String!) {
-  project_inventories(limit: 5, where: {inventory: {scit_control_number: {_ilike: $query}}}) {
-    inventory {
-      scit_control_number
-    }
-    inventory_id
+  inventories(limit: 5, where: {scit_control_number: {_ilike: $query}}) {
+    id
+    scit_control_number
   }
 }`
 
@@ -107,7 +106,9 @@ mutation MyMutation(
   $project_id: Int!,
   $status: String!,
   $total_qty: Int!,
-  $used_qty: Int!
+  $used_qty: Int!,
+  $is_return: Boolean,
+  $updated_at: timestamptz
 ) {
   update_project_inventories(
     where: { id: { _eq: $id } },
@@ -116,7 +117,9 @@ mutation MyMutation(
       project_id: $project_id,
       status: $status,
       total_qty: $total_qty,
-      used_qty: $used_qty
+      used_qty: $used_qty,
+      is_return: $is_return,
+      updated_at: $updated_at
     }
   ) {
     affected_rows

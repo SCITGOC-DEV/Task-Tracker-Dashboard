@@ -16,11 +16,13 @@ import DatePicker from "react-datepicker";
 import {ProjectStatusValues} from "../../utils/ProjectStatus";
 import {ADD_PROJECT_QUERY, GET_ALL_PROJECTS} from "../../graphql/query/projectQueries";
 import {AppConstants} from "../../utils/Constants";
+import {InventoryStatusWithStatus} from "../../utils/ProjectInventoryStatus";
+import AppDropdown from "../../components/AppDropdown";
 
 const AddProject = () => {
     const { currentColor } = useStateContext();
     const navigate = useNavigate()
-    const {role} = useAuth()
+    const {userName} = useAuth()
     const [loading, setLoading] = useState(false)
     const [show, setShow] = useState(false);
     const [date, setDate] = useState(new Date());
@@ -31,7 +33,7 @@ const AddProject = () => {
     const [projectName, setProjectName] = useState('');
     const [projectDescription, setProjectDescription] = useState('');
     const [createdBy, setCreatedBy] = useState('');
-    const [status, setStatus] = useState(null);
+    const [status, setStatus] = useState(ProjectStatusValues[0]);
     const [startDate, setStartDate] = useState(today);
     const [endDate, setEndDate] = useState(today);
     const [actualStartDate, setActualStartDate] = useState(null);
@@ -95,14 +97,15 @@ const AddProject = () => {
             const variables = {
                 project_name: projectName,
                 project_description: projectDescription,
-                created_by: createdBy,
+                created_by: userName,
                 start_date: startDate,
                 end_date: endDate,
                 status: status,
                 actual_start_date: actualStartDate,
-                actual_end_date: actualEndDate
+                actual_end_date: actualEndDate,
+                percentage: 0
             };
-
+            console.log(variables)
             addProject({
                 variables: variables
             })
@@ -112,7 +115,7 @@ const AddProject = () => {
     return (
 
         <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-            <Header title={"Add Inventory Category"} category="Pages" />
+            <Header title={"Add Project"} category="Pages" />
             <Link
                 to={PageRoutes.Projects}
                 className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
@@ -144,15 +147,6 @@ const AddProject = () => {
                         error=""
                     />
 
-                    <InputWithError
-                        className="min-w-full"
-                        title="Created By *"
-                        placeholder="Enter creator's name"
-                        value={createdBy}
-                        onChange={(e) => setCreatedBy(e.target.value)}
-                        error=""
-                    />
-
                     {/* Start Date (Button) */}
                     <InputButton
                         className="min-w-full"
@@ -177,16 +171,11 @@ const AddProject = () => {
                         error={endDateError}
                     />
 
-                    {/* Status */}
-                    <InputFieldWithSuggestion
-                        className="min-w-full"
+                    <AppDropdown
                         title="Status"
-                        placeholder="Enter project status"
                         value={status}
-                        suggestions={ProjectStatusValues}
-                        onChange={(value) => setStatus(value)}
-                        error=""
-                    />
+                        options={ProjectStatusValues}
+                        onSelected={(value) => setStatus(value)}/>
 
                     {/* Actual Start Date (Button) */}
                     <InputButton

@@ -13,6 +13,9 @@ import PageRoutes from "../utils/PageRoutes";
 import AlertDialog from "../components/AlertDialog";
 import { toast } from "react-toastify";
 import useAuth from "../hooks/useAuth";
+import {formatDate} from "../data/dummy";
+import {ActionType} from "../utils/Constants";
+import {MdDelete, MdModeEdit} from "react-icons/md";
 
 export function InventoryCategories() {
     const { currentColor } = useStateContext();
@@ -24,9 +27,9 @@ export function InventoryCategories() {
     const [pageCount, setPageCount] = useState(0);
     const [loading, setLoading] = useState(false);
     const [totalItems, setTotalItems] = useState(0)
-    const [contents, setContents] = useState([]);
     const [open, setOpen] = useState(false)
     const [id, setId] = useState(0)
+    const [inventoryCategories, setInventoryCategories] = useState([])
 
     const [deleteInventoryCategory] = useMutation(DELETE_INVENTORY_CATEGORY, {
         refetchQueries: [
@@ -54,22 +57,14 @@ export function InventoryCategories() {
         onCompleted: (data) => {
             setTimeout(() => {
                 setLoading(false);
-                const result = data.inventory_categories.map(category => [
-                    category.id || "N/A",                      // If id is null, use "N/A"
-                    category.device || "N/A",                  // If device is null, use "N/A"
-                    category.manufacturer || "N/A",            // If manufacturer is null, use "N/A"
-                    category.model_type || "N/A",              // If model_type is null, use "N/A"
-                    category.part_number || "N/A",             // If part_number is null, use "N/A"
-                    category.updated_at || "N/A"
-                ]);
-                setContents(result);
+                setInventoryCategories(data.inventory_categories)
                 setTotalItems(data.total.aggregate.count);
                 setPageCount(Math.ceil(data.total.aggregate.count / itemsPerPage));
             }, 600)
         },
         onError: (error) => {
             setLoading(false);
-            console.error("Error fetching categories: ", error);
+            toast.error(error.message)
         }
     });
 
@@ -80,7 +75,49 @@ export function InventoryCategories() {
         });
     }, [currentPage]);
 
-    const headings = ["ID", "Device", "Manufacturer", "Model", "Part Number", "Updated At"];
+    const headings = [
+        "ID",
+        "Device",
+        "Manufacturer",
+        "Model Type",
+        "Updated At"
+    ];
+
+    const actions = [
+        {
+            type: ActionType.Icon,
+            actions: [
+                {
+                    label: "Edit",
+                    icon: <MdModeEdit/>,
+                    onClick: (id) => handleOnEditClick(id),
+                },
+                {
+                    label: "Delete",
+                    icon: <MdDelete/>,
+                    onClick: (id) => handleOnDeleteClick(id),
+                }
+            ]
+        },
+    ]
+
+    const contents = inventoryCategories.map(category => {
+        const {
+            id = "N/A",
+            device = "N/A",
+            manufacturer = "N/A",
+            model_type = "N/A",
+            updated_at = "N/A"
+        } = category;
+
+        return [
+            id,
+            device,
+            manufacturer,
+            model_type,
+            formatDate(updated_at) // Ensure you format the date appropriately
+        ];
+    });
 
     const handlePageClick = ({ selected }) => {
         setCurrentPage(selected);
@@ -106,8 +143,6 @@ export function InventoryCategories() {
     }
 
     return (
-
-
         loading ? (<Loading />) : (
             <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
                 <Header title={"Inventory Categories"} category="Pages" />
@@ -128,6 +163,7 @@ export function InventoryCategories() {
                     showDeleteOption={role == "admin"}
                     headings={headings}
                     contents={contents}
+                    actions={actions}
                     onEditClick={handleOnEditClick}
                     onDeleteClick={handleOnDeleteClick}
                 />

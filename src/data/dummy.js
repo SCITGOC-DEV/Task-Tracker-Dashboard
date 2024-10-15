@@ -17,8 +17,18 @@ import { TbChartHistogram } from "react-icons/tb";
 
 export const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return format(date, "MM/dd/yyyy/hh:mm a"); // Customize the format as needed
+  if (dateString == null) return "N/A"
+  try {
+    return format(date, "MM/dd/yyyy/hh:mm a");
+  } // Customize the format as needed
+  catch (e) {
+    return dateString;
+  }
 };
+
+export const convertTimestampToDate = (dateString) => {
+  return new Date(dateString).toISOString().split("T")[0];
+}
 
 export const gridOrderImage = (props) => (
   <div>
@@ -126,19 +136,14 @@ export const links = [
         icon: <BiCategoryAlt />,
       },
       {
-        name: "inventory history",
-        href: PageRoutes.InventoryHistory,
-        icon: <TbChartHistogram />,
+        name: "inventories",
+        href: PageRoutes.InventoryRecords,
+        icon: <BiCategoryAlt />,
       },
       {
         name: "projects",
         href: PageRoutes.Projects,
         icon: <AiOutlineProject />,
-      },
-      {
-        name: "project inventories",
-        href: PageRoutes.ProjectInventory,
-        icon: <AiOutlineFundProjectionScreen />,
       },
     ],
   },
@@ -179,24 +184,24 @@ export const projectAdminOptions = [
         icon: <RiMapPin2Line />,
       },
       {
+        name: "tracking tasks",
+        href: "/trackings",
+        icon: <AiOutlineSolution />,
+      },
+      {
         name: "inventory categories",
         href: "/inventory-categories",
         icon: <BiCategoryAlt />,
       },
       {
-        name: "inventory history",
-        href: PageRoutes.InventoryHistory,
-        icon: <TbChartHistogram />,
+        name: "inventories",
+        href: PageRoutes.InventoryRecords,
+        icon: <BiCategoryAlt />,
       },
       {
         name: "projects",
         href: PageRoutes.Projects,
         icon: <AiOutlineProject />,
-      },
-      {
-        name: "project inventories",
-        href: PageRoutes.ProjectInventory,
-        icon: <AiOutlineFundProjectionScreen />,
       },
     ],
   },

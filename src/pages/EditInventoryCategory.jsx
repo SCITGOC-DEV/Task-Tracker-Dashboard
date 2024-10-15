@@ -8,12 +8,14 @@ import { toast } from "react-toastify";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
 import { ActivityIndicator } from "react-native-web";
+import {AppDropdown} from "../components/AppDropdown";
 
 const UpdateInventoryCategory = (category) => {
     const { currentColor } = useStateContext();
     const navigate = useNavigate()
     const { id } = useParams()
     const [loading, setLoading] = useState(false)
+
     const [updateCategory] = useMutation(UPDATE_INVENTORY_CATEGORY_BY_ID, {
         refetchQueries: [
             {
@@ -56,6 +58,9 @@ const UpdateInventoryCategory = (category) => {
             setValue("model_type", category.model_type);
             setValue("part_number", category.part_number);
             setValue("device", category.device);
+        },
+        onError: error => {
+            console.log(error.message)
         }
     })
 
@@ -72,9 +77,9 @@ const UpdateInventoryCategory = (category) => {
             variables: {
                 manufacturer: manufacturer,
                 model_type: model_type,
-                part_number: part_number,
                 device: device,
-                id: id
+                id: id,
+                updated_at: new Date().toISOString(),
             }
         });
     };
@@ -139,30 +144,6 @@ const UpdateInventoryCategory = (category) => {
                                         touchedFields.model_type &&
                                         errors.model_type &&
                                         errors.model_type.message
-                                    }
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 className="text-lg mb-1">Part Number</h3>
-                            <div>
-                                <TextField
-                                    {...register("part_number", {
-                                        required: "part_number is required field",
-                                    })}
-                                    disabled={loading}
-                                    placeholder="Part Number"
-                                    fullWidth
-                                    error={
-                                        touchedFields.part_number &&
-                                        errors.part_number &&
-                                        Boolean(errors.part_number)
-                                    }
-                                    helperText={
-                                        touchedFields.part_number &&
-                                        errors.part_number &&
-                                        errors.part_number.message
                                     }
                                 />
                             </div>

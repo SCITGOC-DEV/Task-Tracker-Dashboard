@@ -19,6 +19,9 @@ import {DELETE_PROJECT_BY_ID, GET_ALL_PROJECTS} from "../../graphql/query/projec
 import TextFieldWithSuggestions, { InputFieldWithSuggestion } from "../../components/TextFieldWithSuggestions";
 import { InputButton } from "../../components/InnputButton";
 import { InputWithError } from "../../components/InputWithError";
+import {formatDate} from "../../data/dummy";
+import {ActionType} from "../../utils/Constants";
+import {Md1K, MdDeck, MdDelete, MdModeEdit} from "react-icons/md";
 
 export function Projects() {
     const { currentColor } = useStateContext();
@@ -64,12 +67,12 @@ export function Projects() {
                     project.id || "N/A",                       // Project ID
                     project.project_name || "N/A",
                     project.created_by || "N/A",               // Created by
-                    project.actual_end_date || "N/A",          // Actual end date
-                    project.actual_start_date || "N/A",        // Actual start date
-                    project.end_date || "N/A",                 // End date
-                    project.percentage || "N/A",               // Percentage
+                    formatDate(project.actual_end_date) || "N/A",          // Actual end date
+                    formatDate(project.actual_start_date) || "N/A",        // Actual start date
+                    formatDate(project.end_date) || "N/A",                 // End date
+                    `${project.percentage}%`,               // Percentage
                     project.project_description || "N/A",      // Project description           // Project name
-                    project.start_date || "N/A",               // Start date
+                    formatDate(project.start_date) || "N/A",               // Start date
                     project.status || "N/A"                    // Status
                   ]);
                 setContents(result);
@@ -102,6 +105,39 @@ export function Projects() {
         "Start Date", 
         "Status"
       ];
+
+    const actions = [
+        {
+            type: ActionType.Icon,
+            actions: [
+                {
+                    label: "Edit",
+                    icon: <MdModeEdit/>,
+                    onClick: (id) => handleOnEditClick(id),
+                },
+                {
+                    label: "Delete",
+                    icon: <MdDelete/>,
+                    onClick: (id) => handleOnDeleteClick(id),
+                }
+            ]
+        },
+        {
+            type: ActionType.Dropdown,
+            actions: [
+                {
+                    label: "Add Inventory To Project",
+                    icon: <MdDeck/>,
+                    onClick: (id) => navigate(PageRoutes.ProjectInventory),
+                },
+                {
+                    label: "Add Task",
+                    icon: <Md1K/>,
+                    onClick: (id) => navigate("/tasks"),
+                }
+            ]
+        },
+    ]
       
     const handlePageClick = ({ selected }) => {
         setCurrentPage(selected);
@@ -133,7 +169,7 @@ export function Projects() {
             <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
                 <Header title={"Projects"} category="Pages" />
                 {
-                    (role == "admin") ? (
+                    (true) ? (
                         <div className="flex flex-row justify-end">
                             <Link
                                 to={PageRoutes.AddProject}
@@ -149,6 +185,7 @@ export function Projects() {
                     showDeleteOption={role == "admin"}
                     headings={headings}
                     contents={contents}
+                    actions={actions}
                     onEditClick={handleOnEditClick}
                     onDeleteClick={handleOnDeleteClick}
                 />

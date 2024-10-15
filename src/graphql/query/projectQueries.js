@@ -49,6 +49,7 @@ mutation MyMutation(
   $status: String,
   $actual_start_date: timestamptz,
   $actual_end_date: timestamptz,
+  $percentage: numeric
 ) {
   insert_projects(objects: {
     project_name: $project_name,
@@ -59,7 +60,7 @@ mutation MyMutation(
     status: $status,
     actual_start_date: $actual_start_date,
     actual_end_date: $actual_end_date,
-    percentage: 0
+    percentage: $percentage
   }) {
     affected_rows
   }
@@ -76,7 +77,8 @@ mutation MyMutation(
   $project_description: String,
   $project_name: String,
   $start_date: timestamptz,
-  $status: String
+  $status: String,
+  $updated_at: timestamptz
 ) {
   update_projects(
     where: {id: {_eq: $id}},
@@ -89,7 +91,8 @@ mutation MyMutation(
       project_description: $project_description,
       project_name: $project_name,
       start_date: $start_date,
-      status: $status
+      status: $status,
+      updated_at: $updated_at,
     }
   ) {
     affected_rows

@@ -22,6 +22,8 @@ import {
     GET_INVENTORY_DATA_BY_SCIT, GET_PROJECT_INVENTORY_BY_ID,
     GET_PROJECT_NAMES, UPDATE_PROJECT_INVENTORY_BY_ID
 } from "../../graphql/query/projectInventoryQueries";
+import {AppCheckBox} from "../../components/AppCheckBox";
+import AppDropdown from "../../components/AppDropdown";
 
 const EditProjectInventory = () => {
     const { currentColor } = useStateContext();
@@ -35,9 +37,11 @@ const EditProjectInventory = () => {
     const {id} = useParams();
 
     // State variables for fields
+    const [projectId, setProjectId] = useState(null)
     const [project, setProject] = useState(null);
     const [projectError, setProjectError] = useState("");
 
+    const [inventoryId, setInventoryId] = useState(null)
     const [inventory, setInventory] = useState(null);
     const [inventoryError, setInventoryError] = useState("");
 
@@ -47,21 +51,25 @@ const EditProjectInventory = () => {
     const [usedQuantity, setUsedQuantity] = useState("");
     const [usedQuantityError, setUsedQuantityError] = useState("");
 
-    const [status, setStatus] = useState("");
+    const [status, setStatus] = useState(InventoryStatusWithStatus[0]);
     const [formError, setFormError] = useState("");
 
     const [projectNames, setProjectNames] = useState([]);
     const [inventories, setInventories] = useState([]);
 
+    const [isReturn, setIsReturn] = useState(false)
+
     const [getProjectInventoryById] = useLazyQuery(GET_PROJECT_INVENTORY_BY_ID, {
         onCompleted: data => {
             const inventory = data.project_inventories[0]
-            console.log(inventory.project.project_name)
             setProject(inventory.project.project_name)
+            setProjectId(inventory.project.id)
             setInventory(inventory.inventory.scit_control_number)
+            setInventoryId(inventory.inventory.id)
             setTotalQuantity(inventory.total_qty)
             setUsedQuantity(inventory.used_qty)
             setStatus(inventory.status)
+            setIsReturn(inventory.is_return)
         },
         onError: error => {
             console.log(error.message)
@@ -86,8 +94,8 @@ const EditProjectInventory = () => {
 
     const [getInventories] = useLazyQuery(GET_INVENTORY_DATA_BY_SCIT, {
         onCompleted: data => {
-            console.log(data.project_inventories.map(inventory => inventory.inventory.scit_control_number))
-            setInventories(data.project_inventories)
+            console.log(data.inventories.map(inventory => inventory.scit_control_number))
+            setInventories(data.inventories)
         },
         onError: (error) => {
             console.log(error)
@@ -161,10 +169,12 @@ const EditProjectInventory = () => {
         if (validateForm()) {
             const variables = {
                 id: id,
-                project_id: project,
-                inventory_id: inventory,
+                project_id: projectId,
+                inventory_id: inventoryId,
                 total_qty: Number(totalQuantity),
                 used_qty: Number(usedQuantity),
+                is_return: isReturn,
+                updated_at: new Date().toISOString(),
                 status: status
             }
             console.log(variables)
@@ -213,8 +223,8 @@ const EditProjectInventory = () => {
                         suggestions={projectNames.map(project => project.project_name)}
                         onChange={(value) => {
                             const project = projectNames.find(item => item.project_name == value)
-                            setProject(project?.id)
-
+                            setProjectId(project?.id)
+                            setProject(value)
                         }}
                         onValueChange={handleOnProjectChange}
                         error={projectError}
@@ -226,13 +236,13 @@ const EditProjectInventory = () => {
                         title="Inventory *"
                         placeholder="Select or Enter Inventory"
                         value={inventory}
-                        suggestions={inventories.map(inventory => inventory.inventory.scit_control_number)}
+                        suggestions={inventories.map(inventory => inventory.scit_control_number)}
                         onChange={(value) => {
                             const inventoryItem = inventories?.find(
-                                item => item.inventory?.scit_control_number === value
+                                item => item.scit_control_number === value
                             );
-                            setInventory(inventoryItem?.inventory_id)
-                            console.log(inventory)
+                            setInventoryId(inventoryItem?.id)
+                            setInventory(value)
                         }}
                         onValueChange={handleOnInventoryChange}
                         error={inventoryError}
@@ -259,16 +269,17 @@ const EditProjectInventory = () => {
                     />
 
                     {/* Status (with suggestions) */}
-                    <InputFieldWithSuggestion
-                        className="min-w-full"
+                    <AppDropdown
                         title="Status"
-                        placeholder="Select Status"
                         value={status}
-                        suggestions={InventoryStatusWithStatus}
-                        onChange={(value) => setStatus(value)}
-                        onValueChange={() => {}}
-                        error=""
-                    />
+                        options={InventoryStatusWithStatus}
+                        onSelected={(value) => setStatus(value)}/>
+
+                    <AppCheckBox
+                        value={isReturn}
+                        title={"Is Return"}
+                        onChange={(value) => setIsReturn(!isReturn)}
+                        />
 
                     {/* Submit Button */}
                     <button

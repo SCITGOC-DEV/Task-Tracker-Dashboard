@@ -21,6 +21,8 @@ import { InputButton } from "../../components/InnputButton";
 import { InputWithError } from "../../components/InputWithError";
 import {DELETE_PROJECT_INVENTORY, GET_PROJECT_INVENTORIES} from "../../graphql/query/projectInventoryQueries";
 import {DELETE_TASK_INVENTORY_BY_ID, GET_ALL_TASK_INVENTORIES} from "../../graphql/query/taskInventoryQueries";
+import AlertSnackbar from "../../components/AlertSnackbar";
+import EmptyState from "../../components/EmptyState";
 
 export function TaskInventory() {
     const { currentColor } = useStateContext();
@@ -35,6 +37,7 @@ export function TaskInventory() {
     const [contents, setContents] = useState([]);
     const [open, setOpen] = useState(false)
     const [id, setId] = useState(0)
+    const [error, setError] = useState(null)
 
     const [deleteTaskInventoryById] = useMutation(DELETE_TASK_INVENTORY_BY_ID, {
         refetchQueries: [
@@ -62,7 +65,6 @@ export function TaskInventory() {
         onCompleted: (data) => {
             setTimeout(() => {
                 setLoading(false);
-                console.log(data)
                 const result = data.task_inventories.map((taskInventory) => [
                     taskInventory.id || "N/A",                                           // Task Inventory ID
                     taskInventory.task_name?.task_name || "N/A",                         // Task Name
@@ -82,7 +84,7 @@ export function TaskInventory() {
         },
         onError: (error) => {
             setLoading(false);
-            console.error("Error fetching categories: ", error);
+            setError(error.message)
         }
     });
 
@@ -131,6 +133,7 @@ export function TaskInventory() {
         loading ? (<Loading />) : (
             <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
                 <Header title={"Task Inventories"} category="Pages" />
+
                 {
                     (role == "admin") ? (
                         <div className="flex flex-row justify-end">
@@ -144,12 +147,18 @@ export function TaskInventory() {
                         </div>
                     ) : <div></div>
                 }
+
                 <DataTable
                     showDeleteOption={role == "admin"}
                     headings={headings}
                     contents={contents}
+                    className={"h-screen"}
                     onEditClick={handleOnEditClick}
                     onDeleteClick={handleOnDeleteClick}
+                    errorProps={{
+                        name: "No Tasks Available",
+                        description: "You currently have no tasks in your inventory. Add new tasks to get started.",
+                    }}
                 />
 
                 <AlertDialog
@@ -166,6 +175,11 @@ export function TaskInventory() {
                     totalPages={pageCount}
                     currentPage={currentPage}
                     handlePageClick={handlePageClick}
+                />
+
+                <AlertSnackbar
+                    message={error}
+                    className="fixed bottom-4 right-4 z-50"  // Position bottom-right with a fixed position
                 />
             </div>
         )

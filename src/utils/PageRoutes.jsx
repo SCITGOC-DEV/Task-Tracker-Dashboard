@@ -1,4 +1,6 @@
 const PageRoutes = {
+    AddUser: "/users/add",
+    AddLocation: "/locations/add",
     AddInventoryCategory: "/inventory-categories/add",
     InventoryCategory: "/inventory-categories",
     EditInventoryCategory: "/inventory-categories/edit/:id",

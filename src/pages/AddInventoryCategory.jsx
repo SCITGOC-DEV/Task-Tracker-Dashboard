@@ -9,6 +9,8 @@ import { useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
 import useAuth from "../hooks/useAuth";
 import { ActivityIndicator } from "react-native-web";
+import AppDropdown from "../components/AppDropdown";
+import {ProjectStatus, ProjectStatusValues} from "../utils/ProjectStatus";
 
 const AddInventoryCategory = () => {
     const { currentColor } = useStateContext();

@@ -21,6 +21,7 @@ import {
     UPDATE_PROJECT_BY_ID
 } from "../../graphql/query/projectQueries";
 import {AppConstants} from "../../utils/Constants";
+import AppDropdown from "../../components/AppDropdown";
 
 const UpdateProject = () => {
     const { currentColor } = useStateContext();
@@ -139,7 +140,8 @@ const UpdateProject = () => {
                 end_date: endDate,
                 status: status,
                 actual_start_date: actualStartDate,
-                actual_end_date: actualEndDate
+                actual_end_date: actualEndDate,
+                updated_at: new Date().toISOString()
             };
 
             updateProject({
@@ -151,7 +153,7 @@ const UpdateProject = () => {
     return (
 
         <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-            <Header title={"Add Inventory Category"} category="Pages" />
+            <Header title={"Update Project"} category="Pages" />
             <Link
                 to={PageRoutes.Projects}
                 className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
@@ -226,15 +228,11 @@ const UpdateProject = () => {
                     />
 
                     {/* Status */}
-                    <InputFieldWithSuggestion
-                        className="min-w-full"
+                    <AppDropdown
                         title="Status"
-                        placeholder="Enter project status"
                         value={status}
-                        suggestions={ProjectStatusValues}
-                        onChange={(value) => setStatus(value)}
-                        error=""
-                    />
+                        options={ProjectStatusValues}
+                        onSelected={(value) => setStatus(value)}/>
 
                     {/* Actual Start Date (Button) */}
                     <InputButton

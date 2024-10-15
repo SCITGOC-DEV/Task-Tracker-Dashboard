@@ -1,8 +1,9 @@
 const flowbite = require("flowbite-react/tailwind");
+const withMT = require("@material-tailwind/react/utils/withMT");
 
 module.exports = {
   content: [
-      './src/**/*.{js,jsx,ts,tsx}',
+    './src/**/*.{js,jsx,ts,tsx}',
   ],
   darkMode: 'class',
   theme: {
@@ -46,7 +47,7 @@ module.exports = {
       backgroundImage: {
         "cover_photo": "./src/data/product6.jpg",
         'hero-pattern':
-          "url('https://i.ibb.co/MkvLDfb/Rectangle-4389.png')",
+            "url('https://i.ibb.co/MkvLDfb/Rectangle-4389.png')",
       },
     },
   },

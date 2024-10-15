@@ -1,180 +1,149 @@
-import React, {useState} from "react";
-import { Button, Header, PaginationButtons } from "../components";
-import { useQuery } from "@apollo/client";
-import { getAllUsers } from "../graphql/query/getAllUsers";
-import { useStateContext } from "../contexts/ContextProvider";
-import { Link } from "react-router-dom";
-import { formatDate } from "../data/dummy";
-import { MdOutlineVpnKey, MdOutlineEditCalendar } from "react-icons/md";
+import React, {useEffect, useState} from "react";
+import {Button, Header, PaginationButtons} from "../components";
+import {useLazyQuery, useQuery} from "@apollo/client";
+import {getAllUsers} from "../graphql/query/getAllUsers";
+import {useStateContext} from "../contexts/ContextProvider";
+import {Link, useNavigate} from "react-router-dom";
+import {formatDate} from "../data/dummy";
+import {MdOutlineVpnKey, MdOutlineEditCalendar, MdModeEdit, MdDelete} from "react-icons/md";
 
 import IconButton from "../components/IconButton";
 import Loading from "../components/Loading";
+import {Table} from "flowbite-react";
+import DataTable from "../components/DataTable";
+import Pagination from "../components/Pagination";
+import AlertSnackbar from "../components/AlertSnackbar";
+import AppButton from "../components/AppButton";
+import PageRoutes from "../utils/PageRoutes";
+import EmptyState from "../components/EmptyState";
+import {ActionType} from "../utils/Constants";
+
 const User = () => {
-  const { currentColor } = useStateContext();
-  const [currentPage, setCurrentPage] = React.useState(0);
-  const itemsPerPage = 10;
-  const offset = currentPage * itemsPerPage;
-  const [loading, setLoading] = useState(false);
+    const {currentColor} = useStateContext();
+    const navigate = useNavigate()
+    const [currentPage, setCurrentPage] = React.useState(0);
+    const itemsPerPage = 10;
+    const offset = currentPage * itemsPerPage;
+    const [users, setUsers] = useState([])
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null)
+    const [totalItems, setTotalItems] = useState(0)
+    const [pageCount, setPageCount] = useState(0)
 
-  const { data } = useQuery(getAllUsers, {
-    variables: { offset, limit: itemsPerPage },
-    fetchPolicy: "network-only",
-  });
+    const [loadUsers] = useLazyQuery(getAllUsers, {
+        onCompleted: data => {
+            setTimeout(() => {
+                setLoading(false)
+                setUsers(data.users)
+                setTotalItems(data?.users_aggregate.aggregate.count)
+                setPageCount(Math.ceil(totalItems / itemsPerPage))
+            }, 500)
+        },
+        onError: error => {
+            setLoading(false)
+            setError(error.message)
+        }
+    })
 
-  const totalItems = data?.users_aggregate.aggregate.count;
-  const pageCount = Math.ceil(totalItems / itemsPerPage);
+    useEffect(() => {
+        loadUsers({
+            variables: {offset: offset, limit: itemsPerPage},
+            fetchPolicy: "network-only",
+        })
+    }, [offset]);
 
-  const handlePageClick = ({ selected }) => {
-    setCurrentPage(selected);
-  };
+    const handlePageClick = ({selected}) => {
+        setCurrentPage(selected);
+    };
 
-  if(totalItems == null) return <Loading/>
+    const headings = [
+        "ID",
+        "Name",
+        "Email",
+        "Phone",
+        "Address",
+        "Created Date",
+        "Actions"
+    ];
 
-  return (
-    <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
-      <Header title={"Users"} category="Pages" />
-      <div className="flex flex-row justify-end">
-        <Link
-          to={"/users/add"}
-          className="inline-block p-3 rounded-lg mb-4 text-white hover:opacity-95"
-          style={{ background: currentColor }}
-        >
-          Add User
-        </Link>
-        {/* <Button
-          disabled={true}
-          style={{ background: currentColor }}
-          size="large"
-          className="mb-6"
-        >
-          Add User
-        </Button> */}
-      </div>
-      <div className="flex flex-col dark:bg-box-dark-bg bg-white rounded-lg">
-        <div className="overflow-x-auto">
-          <div className="p-1.5 w-full inline-block align-middle">
-            <div className="overflow-x-auto rounded-lg">
-              <table className="min-w-full divide-y dark:divide-gray-600 divide-gray-200">
-                <thead>
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      NO.
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      ID
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      Name
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      Email
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      Phone
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      Address
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      Created Date
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y dark:divide-gray-600 divide-gray-200">
-                  {Array.isArray(data?.users) &&
-                    data?.users.length > 0 &&
-                    data.users.map((user, index) => (
-                      <tr key={user.id}>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-800 dark:text-white whitespace-nowrap">
-                          {++index}
-                        </td>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-800 dark:text-white whitespace-nowrap">
-                          {user.id}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          {user.username}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          {user.email}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          {user.phone ? user.phone : "##"}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          {user.address ? user.address : "##"}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          {formatDate(user.created_at)}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          <Link
-                            to={`/users/change-password/${user.id}`}
-                            className="mr-4"
-                          >
-                            <IconButton>
-                              <MdOutlineVpnKey
-                                size={20}
-                                className="text-green-500"
-                              />
-                            </IconButton>
-                          </Link>
-                          <Link
-                            to={`/users/edit-user/${user.id}`}
-                            style={{ color: currentColor }}
-                          >
-                            <IconButton>
-                              <MdOutlineEditCalendar size={20} />
-                            </IconButton>
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-              <div className="justify-end flex">
-                {currentPage === 0 && data?.users.length <= 9 ? (
-                  <></>
-                ) : (
-                  <PaginationButtons
-                    currentPage={currentPage}
-                    totalPages={pageCount}
-                    handlePageClick={handlePageClick}
-                  />
-                )}
-              </div>
+    const actions = [
+        {
+            type: ActionType.Icon,
+            actions: [
+                {
+                    label: "Edit",
+                    icon: <MdModeEdit/>,
+                    onClick: (id) => handleOnEditClick(id),
+                },
+                {
+                    label: "Delete",
+                    icon: <MdDelete/>,
+                    onClick: (id) => handleOnDeleteClick(id),
+                }
+            ]
+        },
+    ]
+
+    const contents = users.map(user => {
+        const {
+            id = "N/A",
+            username = "N/A",
+            email = "N/A",
+            phone = "##",
+            address = "##",
+            created_at = "N/A"
+        } = user;
+
+        return [
+            id,
+            username,
+            email,
+            phone,
+            address,
+            formatDate(created_at)
+        ];
+    });
+
+    const handleOnEditClick = (id) => {
+        navigate(`/users/change-password/${id}`)
+    }
+
+    const handleOnDeleteClick = () => {
+
+    }
+
+    if (loading) return <Loading/>
+
+    return (
+        <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
+            <Header title={"Users"} category="Pages"/>
+            <div className="flex flex-row justify-end">
+                <AppButton title={"Add User"} route={PageRoutes.AddUser}/>
             </div>
-          </div>
+            <DataTable
+                headings={headings}
+                contents={contents}
+                actions={actions}
+                onEditClick={(user) => handleOnEditClick(user.id)}
+                onDeleteClick={handleOnDeleteClick}
+                errorProps={{
+                    name: "No Users Found",
+                    description: "Get started by adding new users to the system. Once added, they will appear here."
+                }}
+                showDeleteOption={true}/>
+            <Pagination
+                totalPages={pageCount}
+                currentPage={currentPage}
+                handlePageClick={handlePageClick}
+            />
+
+            <AlertSnackbar
+                message={error}
+                className="fixed bottom-4 right-4 z-50"  // Position bottom-right with a fixed position
+            />
+
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default User;

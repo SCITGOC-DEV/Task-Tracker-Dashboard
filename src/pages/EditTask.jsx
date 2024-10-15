@@ -290,7 +290,7 @@ const EditTask = () => {
                 title="Note"
                 placeholder="Enter Note"
                 value={note}
-                onChange={(e) => setNote(e.target.value)}
+                onCh  ange={(e) => setNote(e.target.value)}
             />
 
             <InputButton

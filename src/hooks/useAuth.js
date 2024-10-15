@@ -27,6 +27,17 @@ const useAuth = () => {
       } else return null
   }
 
+  function getUser () {
+    const token = window.localStorage.getItem(ACCESS_TOKEN)
+        ? window.localStorage.getItem(ACCESS_TOKEN)
+        : null;
+    if (token) {
+      const user = jose.decodeJwt(token);
+      const role = user["https://hasura.io/jwt/claims"]["x-hasura-default-role"];
+      return user.user_name
+    } else return null
+  }
+
   function getUserData() {
     if (isUser) {
       const token = window.localStorage.getItem(ACCESS_TOKEN)
@@ -55,6 +66,7 @@ const useAuth = () => {
   return {
     userId: isUser ? getUserData() : null,
     role: getRole(),
+    userName: getUser(),
     logout,
   };
 };

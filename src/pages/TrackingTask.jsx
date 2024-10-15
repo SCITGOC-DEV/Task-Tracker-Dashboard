@@ -1,142 +1,119 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { Header, PaginationButtons } from "../components";
 import { useStateContext } from "../contexts/ContextProvider";
-import { useQuery } from "@apollo/client";
+import {useLazyQuery, useQuery} from "@apollo/client";
 import { getAllTrackingTasks } from "../graphql/query/getAllTrackingTask";
 import { formatDate } from "../data/dummy";
-import { Link } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import { IoEyeOutline } from "react-icons/io5";
 import IconButton from "../components/IconButton";
+import Loading from "../components/Loading";
+import DataTable from "../components/DataTable";
+import {ActionType} from "../utils/Constants";
+import {MdDelete, MdModeEdit} from "react-icons/md";
+
 const TrackingTask = () => {
   const { currentColor } = useStateContext();
+  const navigate = useNavigate()
   const [currentPage, setCurrentPage] = React.useState(0);
+  const [loading, setLoading] = useState(true);
+  const [allTrackingTasks, setAllTrackingTasks] = React.useState([]);
+  const [totalItems, setTotalItems] = React.useState(0);
+  const [pageCount, setPageCount] = React.useState(0);
   const itemsPerPage = 10;
   const offset = currentPage * itemsPerPage;
   const { data } = useQuery(getAllTrackingTasks, {
     variables: { offset, limit: itemsPerPage },
   });
 
-  const totalItems = data?.tracking_aggregate.aggregate.count;
-  const pageCount = Math.ceil(totalItems / itemsPerPage);
+  const [loadAllTrackingTasks] = useLazyQuery(getAllTrackingTasks, {
+    onCompleted: data => {
+      setTimeout(() => {
+        setLoading(false);
+        setAllTrackingTasks(data.tracking)
+        setTotalItems(data?.tracking_aggregate.aggregate.count)
+        setPageCount(Math.ceil(totalItems / itemsPerPage))
+      },500)
+    },
+    onError: (err) => {
+      setLoading(false)
+      toast.error(err.message)
+    }
+  })
+
+  useEffect(() => {
+    loadAllTrackingTasks({variables: { offset, limit: itemsPerPage }})
+  }, []);
 
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
   };
+
+  const headings = [
+    "ID",
+    "Task Name",
+    "Dispatch",
+    "Start Date & Time",
+    "End Date & Time",
+    "Location Name",
+    "User Name",
+    "Quantity"
+  ];
+
+  const actions = [
+    {
+      type: ActionType.Icon,
+      actions: [
+        {
+          label: "Edit",
+          icon: <MdModeEdit/>,
+          onClick: (id) => navigate(`/trackings/${id}`),
+        }
+      ]
+    },
+  ]
+
+// Updated Contents for Essential Fields
+  const contents = allTrackingTasks.map(task => {
+    const {
+      id = "N/A",
+      dispatch = "N/A",
+      start_date_time = "N/A",
+      end_date_time = "N/A",
+      fk_location_name = "N/A",
+      fk_task_name = "N/A",
+      fk_user_name = "N/A",
+      quantity = "N/A",
+    } = task;
+
+    return [
+      id,
+      fk_task_name,
+      dispatch==true ? "Yes" : "No",
+      formatDate(start_date_time), // Format the start date/time
+      formatDate(end_date_time), // Format the end date/time
+      fk_location_name,
+      fk_user_name,
+      quantity,
+    ];
+  });
+
+  if (loading) return <Loading/>
+
   return (
     <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
       <Header title={"Tracking Tasks"} category="Pages" />
-      <div className="flex flex-col dark:bg-box-dark-bg bg-white rounded-lg">
-        <div className="overflow-x-auto">
-          <div className="p-1.5 w-full inline-block align-middle">
-            <div className="overflow-x-auto rounded-lg">
-              <table className="min-w-full divide-y dark:divide-gray-600 divide-gray-200">
-                <thead>
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      NO.
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      ID
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      Name
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      Task Name
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      Location Name
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      Start Time
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      End Time
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-xs font-bold text-left text-light-gray uppercase "
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y dark:divide-gray-600 divide-gray-200">
-                  {Array.isArray(data?.tracking) &&
-                    data?.tracking.length > 0 &&
-                    data.tracking.map((tracking, index) => (
-                      <tr key={tracking.id}>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-800 dark:text-white whitespace-nowrap">
-                          {++index}
-                        </td>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-800 dark:text-white whitespace-nowrap">
-                          {tracking.id}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          {tracking.fk_user_name}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          {tracking.fk_task_name}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          {tracking.fk_location_name}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          {formatDate(tracking.start_date_time)}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          {formatDate(tracking.end_date_time)}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-800 dark:text-white whitespace-nowrap">
-                          <Link to={`/trackings/${tracking.id}`} className="">
-                            <IconButton>
-                              <IoEyeOutline
-                                size={20}
-                                style={{ color: currentColor }}
-                              />
-                            </IconButton>
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-              <div className="justify-end flex">
-                {currentPage === 0 && data?.tracking.length <= 9 ? (
-                  <></>
-                ) : (
-                  <PaginationButtons
-                    currentPage={currentPage}
-                    totalPages={pageCount}
-                    handlePageClick={handlePageClick}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <DataTable
+          headings={headings}
+          contents={contents}
+          actions={actions}
+          showDetailAction={true}
+          onDetailClick={(id) => navigate(`/trackings/${id}`)}
+          errorProps={{
+            name: "No Tasks Found",
+            description: "You haven't added any tasks yet. Create a new task to get started.",
+          }}
+      />
     </div>
   );
 };
