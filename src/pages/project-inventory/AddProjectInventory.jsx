@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { useStateContext } from "../../contexts/ContextProvider";
 import { Button, Header, TextField } from "../../components";
-import { Link, useNavigate } from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import PageRoutes from "../../utils/PageRoutes";
 import { toast } from "react-toastify";
 import {useLazyQuery, useMutation} from "@apollo/client";
@@ -14,7 +14,11 @@ import { InputButton } from "../../components/InnputButton";
 import { InputFieldWithSuggestion } from "../../components/TextFieldWithSuggestions";
 import DatePicker from "react-datepicker";
 import {ProjectStatusValues} from "../../utils/ProjectStatus";
-import {ADD_PROJECT_QUERY, GET_ALL_PROJECTS} from "../../graphql/query/projectQueries";
+import {
+    ADD_PROJECT_QUERY,
+    GET_ALL_PROJECTS,
+    GET_ALL_TASKS_AND_INVENTORIES_BY_PROJECT_ID
+} from "../../graphql/query/projectQueries";
 import {AppConstants} from "../../utils/Constants";
 import {InventoryStatusWithStatus} from "../../utils/ProjectInventoryStatus";
 import {
@@ -24,21 +28,20 @@ import {
 } from "../../graphql/query/projectInventoryQueries";
 import AppDropdown from "../../components/AppDropdown";
 import {AppCheckBox} from "../../components/AppCheckBox";
+import {
+    GET_ALL_INVENTORIES_BY_MANUFACTURER_AND_MODEL_TYPE, GET_ALL_INVENTORIES_BY_MODEL_TYPE,
+    GET_ALL_INVENTORIES_BY_SCIT
+} from "../../graphql/query/inventoryHistoryQueries";
+import BackButton from "../../components/BackButton";
 
 const AddProjectInventory = () => {
     const { currentColor } = useStateContext();
     const navigate = useNavigate()
     const {role} = useAuth()
+    const {id} = useParams()
     const [loading, setLoading] = useState(false)
     const [show, setShow] = useState(false);
     const [date, setDate] = useState(new Date());
-
-    const today = new Date().toISOString();
-
-    // State variables for fields
-    const [projectId, setProjectId] = useState(null)
-    const [project, setProject] = useState(null);
-    const [projectError, setProjectError] = useState("");
 
     const [inventoryId, setInventoryId] = useState(null)
     const [inventory, setInventory] = useState(null);
@@ -47,30 +50,17 @@ const AddProjectInventory = () => {
     const [totalQuantity, setTotalQuantity] = useState("");
     const [totalQuantityError, setTotalQuantityError] = useState("");
 
-    const [usedQuantity, setUsedQuantity] = useState("");
-    const [usedQuantityError, setUsedQuantityError] = useState("");
+    const [manufacturer, setManufacturer] = useState(null);
+    const [manufacturerError, setManufacturerError] = useState("");
 
-    const [status, setStatus] = useState(InventoryStatusWithStatus[0]);
-    const [formError, setFormError] = useState("");
+    const [modelType, setModelType] = useState(null);
+    const [modelTypeError, setModelTypeError] = useState("")
 
-    const [projectNames, setProjectNames] = useState([]);
     const [inventories, setInventories] = useState([]);
+    const [modelTypes, setModelTypes] = useState([]);
 
-    const [isReturn, setIsReturn] = useState(false)
-
-    const [getProjectNames] = useLazyQuery(GET_PROJECT_NAMES, {
+    const [getInventories] = useLazyQuery(GET_ALL_INVENTORIES_BY_SCIT, {
         onCompleted: data => {
-            console.log(data)
-            setProjectNames(data.projects)
-        },
-        onError: (error) => {
-            console.log(error)
-        }
-    })
-
-    const [getInventories] = useLazyQuery(GET_INVENTORY_DATA_BY_SCIT, {
-        onCompleted: data => {
-            console.log(data.inventories.map(inventory => inventory.scit_control_number))
             setInventories(data.inventories)
         },
         onError: (error) => {
@@ -78,12 +68,40 @@ const AddProjectInventory = () => {
         }
     })
 
+    const [getAllInventoriesByManufacturerAndModelType] = useLazyQuery(GET_ALL_INVENTORIES_BY_MANUFACTURER_AND_MODEL_TYPE, {
+        onCompleted: data => {
+            setInventories(data.inventories)
+        },
+        onError : (error) => {
+            console.log(error)
+        }
+    })
+
+    const [getAllInventoriesByModelType] = useLazyQuery(GET_ALL_INVENTORIES_BY_MODEL_TYPE, {
+        onCompleted: data => {
+            setModelTypes(data.inventories)
+        },
+        onError : (error) => {
+            console.log(error)
+        }
+    })
+
+    useEffect(() => {
+        if (manufacturer) console.log(manufacturer)
+        if (modelType) console.log(modelType)
+    }, [manufacturer,modelType]);
+
     const [addProjectInventory] = useMutation(ADD_PROJECT_INVENTORY, {
+        refetchQueries: [{query: GET_ALL_TASKS_AND_INVENTORIES_BY_PROJECT_ID}],
+        fetchPolicy: "network-only",
         onCompleted: data => {
             setTimeout(() => {
                 setLoading(false)
-                toast.success("Add project inventory in stock")
-                navigate(PageRoutes.ProjectInventory)
+                console.log(data)
+                if (data.project_assigned_inventory_to_project.success == true) {
+                    toast.success("Added project inventory successfully!")
+                    navigate(-1)
+                } else toast.error(data.project_assigned_inventory_to_project.message)
             },[AppConstants.LOADING_DELAY])
         },
         onError: (error) => {
@@ -96,20 +114,19 @@ const AddProjectInventory = () => {
     const validateForm = () => {
         let valid = true;
 
-        // Validate Project field
-        if (!project) {
-            setProjectError("Project is required.");
+        // Validate Inventory field
+        if (manufacturer == null) {
+            setManufacturerError("Manufacturer is required.");
             valid = false;
         } else {
-            setProjectError("");
+            setManufacturerError("");
         }
 
-        // Validate Inventory field
-        if (inventoryId == null) {
-            setInventoryError("Inventory is required.");
+        if (modelType == null) {
+            setModelTypeError("Model Type is required.");
             valid = false;
         } else {
-            setInventoryError("");
+            setModelTypeError("");
         }
 
         // Validate Total Quantity field
@@ -118,21 +135,6 @@ const AddProjectInventory = () => {
             valid = false;
         } else {
             setTotalQuantityError("");
-        }
-
-        // Validate Used Quantity field
-        if (!usedQuantity || isNaN(usedQuantity)) {
-            setUsedQuantityError("Used Quantity must be a valid number.");
-            valid = false;
-        } else {
-            setUsedQuantityError("");
-        }
-
-        // Check overall form validity
-        if (!valid) {
-            setFormError("Please fill in all required fields correctly.");
-        } else {
-            setFormError("");
         }
 
         return valid;
@@ -144,12 +146,9 @@ const AddProjectInventory = () => {
         // Submit form if valid
         if (validateForm()) {
             const variables = {
-                project_id: projectId,
+                project_id: id,
                 inventory_id: inventoryId,
-                total_qty: Number(totalQuantity),
-                used_qty: Number(usedQuantity),
-                status: status,
-                is_return: isReturn
+                total_qty: Number(totalQuantity)
             }
             console.log(variables)
             setLoading(true)
@@ -159,67 +158,82 @@ const AddProjectInventory = () => {
         }
     };
 
-    const handleOnProjectChange = (query) => {
-        console.log(query);
-        getProjectNames({
-            variables: {query: `${query}%`}
-        })
-        setProject(query)
-    }
-
     const handleOnInventoryChange = (query) => {
         getInventories({
-            variables: {query: `${query}%`}
+            variables: {controlNumber: `${query}%`}
         })
+    }
+
+    const handleOnManufacturerChange = (query) => {
+        setInventories([])
+        const variables = {manufacturer: `${query}%`, modelType: `${modelType}%`};
+        console.log(variables)
+        getAllInventoriesByManufacturerAndModelType({
+            variables: variables
+        });
+    }
+
+    const handleOnModelTypeChange = (query) => {
+        setInventories([])
+        const variables = {modelType: `${query}%`, manufacturer: `${manufacturer}%`};
+        console.log(variables)
+        getAllInventoriesByModelType({
+            variables: variables
+        });
     }
 
     return (
 
         <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-            <Header title={"Add Project Inventory"} category="Pages" />
-            <Link
-                to={PageRoutes.ProjectInventory}
-                className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
-                style={{ background: currentColor }}
-            >
-                Back
-            </Link>
+            <BackButton onBackClick={() => navigate(-1)} />
+            <Header
+                title={"Add Project Inventory"}
+                category="Pages"
+                showAddButton={false}
+            />
 
             <div className="w-full flex flex-col justify-center items-center">
                 <div
                     className="sm:w-5/6 lg:w-3/6 md:4/6 w-full dark:bg-box-dark-bg border bg-white flex flex-col gap-4 dark:shadow-sm shadow-md sm:p-10 p-5 rounded-lg">
-                    {/* Project (with suggestions) */}
-                    <InputFieldWithSuggestion
-                        className="min-w-full"
-                        title="Project *"
-                        placeholder="Select or Enter Project"
-                        value={project}
-                        suggestions={projectNames.map(project => project.project_name)}
-                        onChange={(value) => {
-                            const project = projectNames.find(item => item.project_name == value)
-                            setProjectId(project?.id)
-                            setProject(value)
-                        }}
-                        onValueChange={handleOnProjectChange}
-                        error={projectError}
-                    />
 
                     {/* Inventory (with suggestions) */}
                     <InputFieldWithSuggestion
                         className="min-w-full"
-                        title="Inventory *"
-                        placeholder="Select or Enter Inventory"
+                        title="Manufacturer *"
+                        placeholder="Select or Enter Manufacturer"
                         value={inventory}
-                        suggestions={inventories.map(inventory => inventory.scit_control_number)}
+                        suggestions={inventories.map(inventory => inventory.inventory_category.manufacturer)}
                         onChange={(value) => {
                             const inventoryItem = inventories?.find(
-                                item => item.scit_control_number === value
+                                item => item.inventory_category.manufacturer === value
                             );
-                            setInventoryId(inventoryItem?.id)
-                            setInventory(value)
+                            console.log('modelType: ',modelType, inventoryItem)
+                            if (modelType != null) setInventoryId(inventoryItem?.id)
+                            setManufacturer(value)
                         }}
-                        onValueChange={handleOnInventoryChange}
-                        error={inventoryError}
+                        onValueChange={handleOnManufacturerChange}
+                        error={manufacturerError}
+                    />
+
+                    <InputFieldWithSuggestion
+                        className="min-w-full"
+                        title="Model Type *"
+                        placeholder="Select or Enter Model Type"
+                        value={inventory}
+                        suggestions={modelTypes.map(inventory => inventory.inventory_category.model_type)}
+                        onChange={(value) => {
+                            console.log(modelTypes.map((item) => item.inventory_category.model_type))
+                            console.log(`value: ${value}`)
+
+                            const inventoryItem = modelTypes?.find(
+                                item => item.inventory_category.model_type === value
+                            );
+                            console.log('manufacturer: ',manufacturer, inventoryItem)
+                            if (manufacturer != null) setInventoryId(inventoryItem?.id)
+                            setModelType(value)
+                        }}
+                        onValueChange={handleOnModelTypeChange}
+                        error={modelTypeError}
                     />
 
                     {/* Total Quantity */}
@@ -230,28 +244,6 @@ const AddProjectInventory = () => {
                         value={totalQuantity}
                         onChange={(e) => setTotalQuantity(e.target.value)}
                         error={totalQuantityError}
-                    />
-
-                    {/* Used Quantity */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Used Quantity *"
-                        placeholder="Enter Used Quantity"
-                        value={usedQuantity}
-                        onChange={(e) => setUsedQuantity(e.target.value)}
-                        error={usedQuantityError}
-                    />
-
-                    <AppDropdown
-                        title="Status"
-                        value={status}
-                        options={InventoryStatusWithStatus}
-                        onSelected={(value) => setStatus(value)}/>
-
-                    <AppCheckBox
-                        value={isReturn}
-                        title={"Is Return"}
-                        onChange={(value) => setIsReturn(!isReturn)}
                     />
 
                     {/* Submit Button */}

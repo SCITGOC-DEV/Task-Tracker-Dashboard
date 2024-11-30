@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { useMutation } from "@apollo/client";
 import { ADD_TASK } from "../graphql/mutation/addTask";
 import { toast } from "react-toastify";
-import { getAllTasks } from "../graphql/query/getAllTasks";
+import { GET_ALL_TASKS_BY_PROJECT_ID } from "../graphql/query/getAllTasks";
 import { ADD_LOCATION } from "../graphql/mutation/addLocation";
 import { getAllLocations } from "../graphql/query/getAllLocatioins";
 

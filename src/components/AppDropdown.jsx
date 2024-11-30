@@ -10,7 +10,7 @@ const menuItems = [
 ];
 
 export default function AppDropdown({title, value, options, onSelected, error = null}) {
-    const [selected, setSelected] = React.useState(options[0]);
+    const [selected, setSelected] = React.useState("Select Option");
 
     useEffect(() => {
         setSelected(value)

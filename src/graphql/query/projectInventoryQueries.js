@@ -1,30 +1,34 @@
 import {gql} from "@apollo/client";
 
 export const GET_PROJECT_INVENTORIES = gql`
-  query MyQuery($limit: Int!, $offset: Int!) {
-    project_inventories(limit: $limit, offset: $offset, order_by: {created_at: desc}) {
+  query MyQuery($id: Int!, $limit: Int!, $offset: Int!) {
+  projects(where: {id: {_eq: $id}}) {
+    id
+    project_name
+    project_inventory(limit: $limit, offset: $offset, order_by: {created_at: desc}) {
       id
-      project {
-        project_name
-        percentage
-      }
+      status
+      total_qty
+      used_qty
+      project_id
+      updated_at
       inventory {
-        admin_name
-        email_address
-        country
-        contact_number
-        address
-        quantity
-        scit_control_number
-        serial_number_start
+        inventory_category {
+          manufacturer
+          model_type
+          device
+        }
+        part_number
       }
     }
-    total: project_inventories_aggregate {
-    aggregate {
-      count
+    total: project_inventory_aggregate {
+      aggregate {
+        count
+      }
     }
   }
-  }
+}
+
 `;
 
 export const GET_PROJECT_INVENTORY_BY_ID = gql`
@@ -79,23 +83,10 @@ query MyQuery($query: String!) {
 }`
 
 export const ADD_PROJECT_INVENTORY = gql`
-mutation MyMutation(
-  $project_id: Int!, 
-  $inventory_id: Int!, 
-  $total_qty: Int!, 
-  $used_qty: Int!, 
-  $status: String!, 
-  $is_return: Boolean!
-) {
-  insert_project_inventories(objects: {
-    project_id: $project_id, 
-    inventory_id: $inventory_id, 
-    total_qty: $total_qty, 
-    used_qty: $used_qty, 
-    status: $status, 
-    is_return: $is_return
-  }) {
-    affected_rows
+mutation MyMutation($inventory_id: Int!, $project_id: Int!, $total_qty: Int!) {
+  project_assigned_inventory_to_project(inventory_id: $inventory_id, project_id: $project_id, total_qty: $total_qty) {
+    success
+    message
   }
 }`
 

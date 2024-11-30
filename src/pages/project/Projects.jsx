@@ -21,7 +21,7 @@ import { InputButton } from "../../components/InnputButton";
 import { InputWithError } from "../../components/InputWithError";
 import {formatDate} from "../../data/dummy";
 import {ActionType} from "../../utils/Constants";
-import {Md1K, MdDeck, MdDelete, MdModeEdit} from "react-icons/md";
+import {Md1K, MdDeck, MdDelete, MdModeEdit, MdMore} from "react-icons/md";
 
 export function Projects() {
     const { currentColor } = useStateContext();
@@ -45,6 +45,7 @@ export function Projects() {
                 awaitRefetchQueries: true,
             },
         ],
+        fetchPolicy: "network-only",
         onCompleted: data => {
             setLoading(false)
             toast.success("Task have been deleted! Successfully!");
@@ -112,31 +113,31 @@ export function Projects() {
             actions: [
                 {
                     label: "Edit",
-                    icon: <MdModeEdit/>,
-                    onClick: (id) => handleOnEditClick(id),
+                    icon: <MdMore/>,
+                    onClick: (id) => navigate(`/projects/details/${id}`),
                 },
-                {
+                /*{
                     label: "Delete",
                     icon: <MdDelete/>,
                     onClick: (id) => handleOnDeleteClick(id),
-                }
+                }*/
             ]
         },
-        {
+        /*{
             type: ActionType.Dropdown,
             actions: [
                 {
                     label: "Add Inventory To Project",
                     icon: <MdDeck/>,
-                    onClick: (id) => navigate(PageRoutes.ProjectInventory),
+                    onClick: (id) => navigate(`/projects/project-inventory/${id}`),
                 },
                 {
                     label: "Add Task",
                     icon: <Md1K/>,
-                    onClick: (id) => navigate("/tasks"),
+                    onClick: (id) => navigate(`/projects/tasks/${id}`),
                 }
             ]
-        },
+        },*/
     ]
       
     const handlePageClick = ({ selected }) => {
@@ -164,50 +165,42 @@ export function Projects() {
 
     return (
 
-
         loading ? (<Loading />) : (
             <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
-                <Header title={"Projects"} category="Pages" />
-                {
-                    (true) ? (
-                        <div className="flex flex-row justify-end">
-                            <Link
-                                to={PageRoutes.AddProject}
-                                className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
-                                style={{ background: currentColor }}
-                            >
-                                Add Project
-                            </Link>
-                        </div>
-                    ) : <div></div>
-                }
+                {/* Header Component */}
+                <Header
+                    title="Projects"
+                    category="Pages"
+                    showAddButton={role === "admin"}
+                    buttonTitle="Add Project"
+                    onAddButtonClick={() => navigate(PageRoutes.AddProject)}
+                />
+
+                {/* Data Table */}
                 <DataTable
-                    showDeleteOption={role == "admin"}
+                    showDeleteOption={role === "admin"}
                     headings={headings}
                     contents={contents}
                     actions={actions}
+                    totalPages={pageCount}
+                    currentPage={currentPage}
+                    onPageClick={handlePageClick}
                     onEditClick={handleOnEditClick}
                     onDeleteClick={handleOnDeleteClick}
                 />
 
+                {/* Alert Dialog */}
                 <AlertDialog
                     open={open}
                     onConfirm={deleteTaskCategory}
                     onDismiss={() => setOpen(false)}
-                    title={"Delete Project"}
-                    description={"Are you sure you want to delete this project? All of your data will be permanently removed. This action cannot be undone."}
-                    confirmTitle={"Delete"}
-                    dismissTitle={"Cancel"}
-                />
-
-                <Pagination
-                    totalPages={pageCount}
-                    currentPage={currentPage}
-                    handlePageClick={handlePageClick}
+                    title="Delete Project"
+                    description="Are you sure you want to delete this project? All of your data will be permanently removed. This action cannot be undone."
+                    confirmTitle="Delete"
+                    dismissTitle="Cancel"
                 />
             </div>
+
         )
-
-
     );
 }

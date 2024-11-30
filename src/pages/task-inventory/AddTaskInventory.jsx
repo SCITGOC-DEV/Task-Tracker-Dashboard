@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {useStateContext} from "../../contexts/ContextProvider";
 import {Button, Header, TextField} from "../../components";
-import {Link, useNavigate} from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import PageRoutes from "../../utils/PageRoutes";
 import {toast} from "react-toastify";
 import {useLazyQuery, useMutation} from "@apollo/client";
@@ -28,6 +28,8 @@ import {
     GET_TASK_NAMES,
     GET_USER_NAMES
 } from "../../graphql/query/taskInventoryQueries";
+import BackButton from "../../components/BackButton";
+import AppDropdown, {DropDown} from "../../components/AppDropdown";
 
 const AddTaskInventory = () => {
     const {currentColor} = useStateContext();
@@ -37,6 +39,10 @@ const AddTaskInventory = () => {
     const [show, setShow] = useState(false);
     const [date, setDate] = useState(new Date());
 
+    const {id, taskId} = useParams()
+
+    console.log(id, taskId)
+
     const today = new Date().toISOString();
 
     // State and error handling
@@ -45,7 +51,7 @@ const AddTaskInventory = () => {
     const [projectNameError, setProjectNameError] = useState('');
 
     const [task, setTask] = useState('');
-    const [taskId, setTaskId] = useState(0)
+    //const [taskId, setTaskId] = useState(0)
     const [taskError, setTaskError] = useState('');
 
     const [inventory, setInventory] = useState('');
@@ -58,8 +64,11 @@ const AddTaskInventory = () => {
     const [returnDate, setReturnDate] = useState(today);
     const [returnDateError, setReturnDateError] = useState('');
 
-    const [qty, setQty] = useState('');
+    const [qty, setQty] = useState(null);
     const [qtyError, setQtyError] = useState('');
+
+    const [totalQty, setTotalQty] = useState(null);
+    const [totalQtyError, setTotalQtyError] = useState('');
 
     const [status, setStatus] = useState('');
     const [statusError, setStatusError] = useState('');
@@ -72,42 +81,8 @@ const AddTaskInventory = () => {
     const [requestDate, setRequestDate] = useState(today);
     const [requestDateError, setRequestDateError] = useState('');
 
-    const [actualRentDate, setActualRentDate] = useState(today);
-    const [actualRentDateError, setActualRentDateError] = useState('');
-
-    const [actualReturnDate, setActualReturnDate] = useState(today);
-    const [actualReturnDateError, setActualReturnDateError] = useState('');
-
-    const [projectNames, setProjectNames] = useState([]);
-    const [taskNames, setTaskNames] = useState([]);
     const [inventories, setInventories] = useState([]);
     const [userNames, setUserNames] = useState([])
-
-    const projectSuggestions = ['Project A', 'Project B', 'Project C'];
-    const taskSuggestions = ['Task 1', 'Task 2', 'Task 3'];
-    const inventorySuggestions = ['Inventory 1', 'Inventory 2', 'Inventory 3'];
-    const statusSuggestions = ['Pending', 'Completed', 'In Progress'];
-    const userSuggestions = ['User 1', 'User 2', 'User 3'];
-
-    const [getProjectNames] = useLazyQuery(GET_PROJECT_NAMES, {
-        onCompleted: data => {
-            console.log(data)
-            setProjectNames(data.projects)
-        },
-        onError: (error) => {
-            console.log(error)
-        }
-    })
-
-    const [getTaskNames] = useLazyQuery(GET_TASK_NAMES, {
-        onCompleted: data => {
-            console.log(data)
-            setTaskNames(data.tasks)
-        },
-        onError: (error) => {
-            console.log(error)
-        }
-    })
 
     const [getInventories] = useLazyQuery(GET_INVENTORY_NAMES, {
         onCompleted: data => {
@@ -131,8 +106,13 @@ const AddTaskInventory = () => {
         onCompleted: data => {
             setTimeout(() => {
                 setLoading(false)
-                toast.success("Added task inventory successfully!")
-                navigate(PageRoutes.TaskInventory)
+
+                const response = data.task_assigned_inventory_to_task
+                if (response.success) {
+                    toast.success("Added task inventory successfully!")
+                    navigate(-1)
+                } else toast.error(response.message)
+
             }, [AppConstants.LOADING_DELAY])
         },
         onError: (error) => {
@@ -145,20 +125,6 @@ const AddTaskInventory = () => {
     // Validation
     const validateForm = () => {
         let valid = true;
-
-        if (!projectName) {
-            setProjectNameError('Project Name is required');
-            valid = false;
-        } else {
-            setProjectNameError('');
-        }
-
-        if (!task) {
-            setTaskError('Task is required');
-            valid = false;
-        } else {
-            setTaskError('');
-        }
 
         if (!inventory) {
             setInventoryError('Inventory is required');
@@ -188,6 +154,13 @@ const AddTaskInventory = () => {
             setQtyError('');
         }
 
+        if (!totalQty) {
+            setTotalQtyError('Total quantity is required');
+            valid = false;
+        } else {
+            setTotalQtyError('');
+        }
+
         if (!status) {
             setStatusError('Status is required');
             valid = false;
@@ -209,20 +182,6 @@ const AddTaskInventory = () => {
             setRequestDateError('');
         }
 
-        if (!actualRentDate) {
-            setActualRentDateError('Actual Rent Date is required');
-            valid = false;
-        } else {
-            setActualRentDateError('');
-        }
-
-        if (!actualReturnDate) {
-            setActualReturnDateError('Actual Return Date is required');
-            valid = false;
-        } else {
-            setActualReturnDateError('');
-        }
-
         return valid;
     };
 
@@ -232,18 +191,16 @@ const AddTaskInventory = () => {
         // Submit form if valid
         if (validateForm()) {
             const variables = {
-                project_id: projectId,
-                task_id: taskId,
-                inventory_id: inventoryId,
-                rent_date: rentDate,
-                return_date: returnDate,
-                qty: qty,
-                status: status,
-                request_user_name: requestUserName,
-                request_date: requestDate,
-                remark: remark,
-                actual_rent_date: actualRentDate,
-                actual_return_date: actualReturnDate,
+                project_id: id,                        // Assuming 'id' is the project ID
+                task_id: taskId,                       // Assuming 'taskId' is the task ID
+                inventory_id: inventoryId,             // Assuming 'inventoryId' is the inventory ID
+                qty: qty,                         // Quantity, defaulting to 0 if not provided
+                total_qty: totalQty,              // Total quantity, defaulting to 0 if not provided
+                rent_date: rentDate,           // Rent date, null if not provided
+                return_date: returnDate,       // Return date, null if not provided
+                request_date: requestDate,     // Request date, null if not provided
+                request_user_name: requestUserName, // Request user name, empty string if not provided
+                remark: remark                 // Remark, empty string if not provided
             }
             console.log(variables)
             setLoading(true)
@@ -252,19 +209,6 @@ const AddTaskInventory = () => {
             })
         }
     };
-
-    const handleOnProjectChange = (query) => {
-        getProjectNames({
-            variables: {query: `${query}%`}
-        })
-        setProjectName(query)
-    }
-
-    const handleOnTaskNameChange = (query) => {
-        getTaskNames({
-            variables: {query: `${query}%`}
-        })
-    }
 
     const handleOnInventoryChange = (query) => {
         getInventories({
@@ -281,49 +225,16 @@ const AddTaskInventory = () => {
     return (
 
         <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-            <Header title={"Add Task Inventory"} category="Pages"/>
-            <Link
-                to={PageRoutes.TaskInventory}
-                className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
-                style={{background: currentColor}}
-            >
-                Back
-            </Link>
+            <BackButton onBackClick={() => navigate(-1)} />
+            <Header
+                title={"Add Task Inventory"}
+                category="Pages"
+                showAddButton={false}
+            />
 
             <div className="w-full flex flex-col justify-center items-center">
                 <div
                     className="sm:w-5/6 lg:w-3/6 md:4/6 w-full dark:bg-box-dark-bg border bg-white flex flex-col gap-4 dark:shadow-sm shadow-md sm:p-10 p-5 rounded-lg">
-                    {/* Project Name */}
-                    <InputFieldWithSuggestion
-                        className="min-w-full"
-                        title="Project Name *"
-                        placeholder="Select or Enter Project Name"
-                        value={projectName}
-                        suggestions={projectNames.map(project => project.project_name)}
-                        onChange={(value) => {
-                            const project = projectNames.find(pj => pj.project_name == value)
-                            setProjectId(project?.id)
-                            setProjectName(value)
-                        }}
-                        onValueChange={handleOnProjectChange}
-                        error={projectNameError}
-                    />
-
-                    {/* Task */}
-                    <InputFieldWithSuggestion
-                        className="min-w-full"
-                        title="Task *"
-                        placeholder="Select or Enter Task"
-                        value={task}
-                        suggestions={taskNames.map(task => task.task_name)}
-                        onChange={(value) => {
-                            const task = taskNames.find(task => task.task_name == value)
-                            setTaskId(task?.id)
-                            setTask(value)
-                        }}
-                        onValueChange={handleOnTaskNameChange}
-                        error={taskError}
-                    />
 
                     {/* Inventory */}
                     <InputFieldWithSuggestion
@@ -369,16 +280,20 @@ const AddTaskInventory = () => {
                         error={qtyError}
                     />
 
-                    {/* Status */}
-                    <InputFieldWithSuggestion
+                    <InputWithError
                         className="min-w-full"
-                        title="Status *"
-                        placeholder="Select Status"
-                        value={status}
-                        suggestions={ProjectStatusValues}
-                        onChange={(value) => setStatus(value)}
-                        error={statusError}
+                        title="Total Quantity *"
+                        placeholder="Enter Total Quantity"
+                        value={totalQty}
+                        onChange={(e) => setTotalQty(e.target.value)}
+                        error={totalQtyError}
                     />
+
+                    <AppDropdown
+                        title={"Status *"}
+                        value={status}
+                        options={ProjectStatusValues}
+                        onSelected={(value) => setStatus(value)}/>
 
                     {/* Remark */}
                     <InputWithError
@@ -409,24 +324,6 @@ const AddTaskInventory = () => {
                         buttonTitle={requestDate || 'Select Request Date'}
                         onClick={(date) => setRequestDate(date)}
                         error={requestDateError}
-                    />
-
-                    {/* Actual Rent Date */}
-                    <InputButton
-                        className="min-w-full"
-                        title="Actual Rent Date *"
-                        buttonTitle={actualRentDate || 'Select Actual Rent Date'}
-                        onClick={(date) => setActualRentDate(date)}
-                        error={actualRentDateError}
-                    />
-
-                    {/* Actual Return Date */}
-                    <InputButton
-                        className="min-w-full"
-                        title="Actual Return Date *"
-                        buttonTitle={actualReturnDate || 'Select Actual Return Date'}
-                        onClick={(date) => setActualReturnDate(date)}
-                        error={actualReturnDateError}
                     />
 
                     {/* Submit Button */}

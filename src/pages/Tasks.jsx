@@ -12,7 +12,7 @@ import DataTable from "../components/DataTable";
 import {ActionType} from "../utils/Constants";
 import {MdDelete, MdModeEdit} from "react-icons/md";
 
-const TrackingTask = () => {
+const Tasks = () => {
   const { currentColor } = useStateContext();
   const navigate = useNavigate()
   const [currentPage, setCurrentPage] = React.useState(0);
@@ -30,9 +30,9 @@ const TrackingTask = () => {
     onCompleted: data => {
       setTimeout(() => {
         setLoading(false);
-        setAllTrackingTasks(data.tracking)
-        setTotalItems(data?.tracking_aggregate.aggregate.count)
-        setPageCount(Math.ceil(totalItems / itemsPerPage))
+        setAllTrackingTasks(data.tasks)
+        setTotalItems(data?.tasks_aggregate.aggregate.count)
+        setPageCount(Math.ceil(data?.tasks_aggregate.aggregate.count / itemsPerPage))
       },500)
     },
     onError: (err) => {
@@ -81,19 +81,19 @@ const TrackingTask = () => {
       start_date_time = "N/A",
       end_date_time = "N/A",
       fk_location_name = "N/A",
-      fk_task_name = "N/A",
-      fk_user_name = "N/A",
+      task_name = "N/A",
+      created_by = "N/A",
       quantity = "N/A",
     } = task;
 
     return [
       id,
-      fk_task_name,
+      task_name,
       dispatch==true ? "Yes" : "No",
       formatDate(start_date_time), // Format the start date/time
       formatDate(end_date_time), // Format the end date/time
       fk_location_name,
-      fk_user_name,
+      created_by,
       quantity,
     ];
   });
@@ -107,6 +107,9 @@ const TrackingTask = () => {
           headings={headings}
           contents={contents}
           actions={actions}
+          totalPages={pageCount}
+          currentPage={currentPage}
+          onPageClick={handlePageClick}
           showDetailAction={true}
           onDetailClick={(id) => navigate(`/trackings/${id}`)}
           errorProps={{
@@ -118,4 +121,4 @@ const TrackingTask = () => {
   );
 };
 
-export default TrackingTask;
+export default Tasks;

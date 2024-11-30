@@ -110,18 +110,18 @@ export const links = [
         href: "/users",
         icon: <FiUsers />,
       },
-      {
+      /*{
         name: "tasks",
         href: "/tasks",
         icon: <GoTasklist />,
-      },
+      },*/
       {
         name: "task inventory",
         href: PageRoutes.TaskInventory,
         icon: <GrTasks />,
       },
       {
-        name: "locations",
+        name: "Implemented Sites",
         href: "/locations",
         icon: <RiMapPin2Line />,
       },
@@ -168,11 +168,11 @@ export const projectAdminOptions = [
         href: "/users",
         icon: <FiUsers />,
       },
-      {
+      /*{
         name: "tasks",
         href: "/tasks",
         icon: <GoTasklist />,
-      },
+      },*/
       {
         name: "task inventory",
         href: PageRoutes.TaskInventory,

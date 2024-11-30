@@ -1,9 +1,9 @@
-import {Link, useNavigate} from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import React, {useState} from "react";
 import Header from "../../components/Header";
 import {InputFieldWithSuggestion} from "../../components/TextFieldWithSuggestions";
 import PageRoutes from "../../utils/PageRoutes";
-import {ProjectStatusValues} from "../../utils/ProjectStatus";
+import {InventoriesStatusValues, ProjectStatusValues} from "../../utils/ProjectStatus";
 import {useStateContext} from "../../contexts/ContextProvider";
 import {ActivityIndicator} from "react-native-web";
 import {InputWithError} from "../../components/InputWithError";
@@ -15,6 +15,7 @@ import {ADD_INVENTORY} from "../../graphql/query/inventoryQueries";
 import {data} from "autoprefixer";
 import useAuth from "../../hooks/useAuth";
 import {toast} from "react-toastify";
+import AppDropdown from "../../components/AppDropdown";
 
 const AddInventory = () => {
     const {currentColor} = useStateContext();
@@ -22,6 +23,7 @@ const AddInventory = () => {
     const navigate = useNavigate();
     const [loading,setLoading] = useState(false)
     const {role} = useAuth()
+    const {id} = useParams()
 
     const today = new Date().toISOString();
 
@@ -51,7 +53,7 @@ const AddInventory = () => {
     const [serialNumberStart, setSerialNumberStart] = useState('');
     const [serialNumberEnd, setSerialNumberEnd] = useState("");
     const [isReturn, setIsReturn] = useState(false);
-    const [type, setType] = useState('');
+    const [type, setType] = useState(null);
     const [adminName, setAdminName] = useState('');
     const [inventoryCategoryId, setInventoryCategoryId] = useState(null);
     const [inventoryCategory, setInventoryCategory] = useState("")
@@ -72,8 +74,11 @@ const AddInventory = () => {
         onCompleted: data => {
             setTimeout(() => {
                 setLoading(false)
-                toast.success("Inventory is successfully added.")
-                navigate(PageRoutes.InventoryRecords)
+
+                if (data.inventory_create_inventory.success == true) {
+                    toast.success("Inventory is successfully added.")
+                    navigate(`/inventory-categories/inventories/${id}`)
+                } else toast.error(data.inventory_create_inventory.message)
             },500)
         },
         onError: error => {
@@ -121,24 +126,9 @@ const AddInventory = () => {
     const validateForm = () => {
         const newErrors = {};
 
-        if (unitsOnRequest < 0) newErrors.unitsOnRequest = 'Units on request cannot be negative';
-        if (!createdAt) newErrors.createdAt = 'Creation date is required';
-        if (!scitControlNumber) newErrors.scitControlNumber = 'SCIT Control Number is required';
-        if (!supplier) newErrors.supplier = 'Supplier is required';
-        if (!country) newErrors.country = 'Country is required';
-        if (!address) newErrors.address = 'Address is required';
-        if (!contactNumber || !/^\d+$/.test(contactNumber)) newErrors.contactNumber = 'Valid contact number is required';
-        if (emailAddress && !/\S+@\S+\.\S+/.test(emailAddress)) newErrors.emailAddress = 'Valid email address is required';
-        if (unitPrice < 0) newErrors.unitPrice = 'Unit price cannot be negative';
+        if (unitPrice < 0 || !unitPrice) newErrors.unitPrice = 'Unit price cannot be negative';
         if (quantity < 0) newErrors.quantity = 'Quantity cannot be negative';
-        if (totalAmount < 0) newErrors.totalAmount = 'Total amount cannot be negative';
-        if (!unitPrice) newErrors.unitPrice = 'Unit price cannot be empty';
-        if (!quantity) newErrors.quantity = 'Quantity cannot be empty';
-        if (!totalAmount) newErrors.totalAmount = 'Total amount cannot be empty';
-        if (!totalUnitRelease) newErrors.totalUnitRelease = 'Total units cannot be empty';
-        if (!unitReturn) newErrors.unitReturn = 'Units cannot be empty';
-        if (!stockOffice) newErrors.stockOffice = 'Stock office is required';
-        if (!inventoryCategoryId) newErrors.inventoryCategoryId = 'Inventory Category Id is required';
+        if (!serialNumberStart) newErrors.serialNumberStart = 'Serial number is required';
 
         // Add more validation logic for other fields as needed
 
@@ -158,35 +148,31 @@ const AddInventory = () => {
         if(validateForm() === false) {
             setLoading(true)
             const variables = {
-                address:address,
-                admin_name: role,
-                country:country,
+                supplier: supplier,
+                country: country,
+                address: address,
                 contact_number: contactNumber,
-                created_at: today,
+                email_address: emailAddress,
+                website: website,
+                unit_price: unitPrice,
+                quantity: quantity,
+                total_amount: totalAmount,
                 date_purchase_received: datePurchaseReceived,
                 date_release: dateRelease,
-                date_return: dateReturn,
-                delivered_to_client: deliveredToClient,
-                email_address: emailAddress,
-                delivery_receipt_no: deliveryReceiptNo,
-                inventory_category_id: inventoryCategoryId,
-                is_return: isReturn,
-                location_stock: locationStock,
-                quantity: quantity,
-                scit_control_number: scitControlNumber,
-                serial_number_end: serialNumberEnd,
-                serial_number_start: serialNumberStart,
-                stock_office: stockOffice,
-                supplier: supplier,
-                total_amount: totalAmount,
-                total_stock_amount: totalStockAmount,
                 total_unit_release: totalUnitRelease,
-                unit_price: unitPrice,
-                type: type,
+                delivered_to_client: deliveredToClient,
+                delivery_receipt_no: deliveryReceiptNo,
                 unit_return: unitReturn,
-                units_on_request: unitsOnRequest,
-                updated_at: today,
-                website: website,
+                location_stock: locationStock,
+                date_return: dateReturn,
+                stock_office: stockOffice,
+                serial_number_start: serialNumberStart,
+                serial_number_end: serialNumberEnd,
+                is_return: isReturn,
+                type:type,
+                inventory_category_id: id,
+                part_number: partNumber,
+                total_stock_amount: totalStockAmount
             };
             console.log(`add: ${variables}`)
             addInventory({
@@ -199,7 +185,7 @@ const AddInventory = () => {
         <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
             <Header title={"Add inventory"} category={"Pages"}/>
             <Link
-                to={PageRoutes.InventoryRecords}
+                to={`/inventory-categories/inventories/${id}`}
                 className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
                 style={{background: currentColor}}
             >
@@ -208,26 +194,6 @@ const AddInventory = () => {
             <div className="w-full flex flex-col justify-center items-center">
                 <div
                     className="sm:w-5/6 lg:w-3/6 md:4/6 w-full dark:bg-box-dark-bg border bg-white flex flex-col gap-4 dark:shadow-sm shadow-md sm:p-10 p-5 rounded-lg">
-
-                    {/* Field for Units on Request */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Units on Request *"
-                        placeholder="Enter Units on Request"
-                        value={unitsOnRequest}
-                        onChange={(value) => setUnitsOnRequest(value.target.value)}
-                        error={errors.unitsOnRequest}
-                    />
-
-                    {/* Field for SCIT Control Number */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="SCIT Control Number"
-                        placeholder="Enter SCIT Control Number"
-                        value={scitControlNumber}
-                        onChange={(value) => setScitControlNumber(value.target.value)}
-                        error={errors.scitControlNumber}
-                    />
 
                     {/* Field for Supplier */}
                     <InputWithError
@@ -257,6 +223,14 @@ const AddInventory = () => {
                         value={address}
                         onChange={(value) => setAddress(value.target.value)}
                         error={errors.address}
+                    />
+
+                    <InputWithError
+                        className="min-w-full"
+                        title="Part Number"
+                        placeholder="Enter Part Number"
+                        value={partNumber}
+                        onChange={(value) => setPartNumber(value.target.value)}
                     />
 
                     {/* Field for Contact Number */}
@@ -312,7 +286,7 @@ const AddInventory = () => {
                     {/* Field for Total Amount */}
                     <InputWithError
                         className="min-w-full"
-                        title="Total Amount *"
+                        title="Total Amount"
                         placeholder="Enter Total Amount"
                         value={totalAmount}
                         onChange={(value) => setTotalAmount(value.target.value)}
@@ -390,7 +364,7 @@ const AddInventory = () => {
 
                     <InputWithError
                         className="min-w-full"
-                        title="Stock Office *"
+                        title="Stock Office"
                         placeholder="Enter stock office"
                         value={stockOffice}
                         onChange={(value) => setStockOffice(value.target.value)}
@@ -408,20 +382,11 @@ const AddInventory = () => {
 
                     <InputWithError
                         className="min-w-full"
-                        title="Start Serial Number"
+                        title="Start Serial Number *"
                         placeholder="Enter start serial number"
                         value={serialNumberStart}
                         onChange={(value) => setSerialNumberStart(value.target.value)}
                         error={errors.serialNumberStart}
-                    />
-
-                    <InputWithError
-                        className="min-w-full"
-                        title="Type"
-                        placeholder="Enter type"
-                        value={type}
-                        onChange={(value) => setType(value.target.value)}
-                        error={errors.type}
                     />
 
                     <InputWithError
@@ -433,25 +398,25 @@ const AddInventory = () => {
                         error={errors.serialNumberEnd}
                     />
 
-                    <InputFieldWithSuggestion
+                    {/*<InputWithError
                         className="min-w-full"
-                        title="Inventory Category Name"
-                        placeholder="Select or Enter Inventory category name"
-                        value={inventoryCategory}
-                        onChange={(value) => {
-                            const inventoryCategory = inventoryCategories.find(category => category.device == value)
-                            console.log(inventoryCategory)
-                            setInventoryCategoryId(inventoryCategory?.id)
-                            setInventoryCategory(value)
-                        }}
-                        suggestions={inventoryCategories.map(category => category.device)}
-                        onValueChange={onInventoryCategoryChange}
-                        error={errors.inventoryCategoryId}
-                    />
+                        title="Type"
+                        placeholder="Enter type"
+                        value={type}
+                        onChange={(value) => setType(value.target.value)}
+                        error={errors.type}
+                    />*/}
+
+                    <AppDropdown
+                        title={"Title"}
+                        value={type}
+                        options={InventoriesStatusValues}
+                        onSelected={(value) => setType(value)}
+                        />
 
                     <AppCheckBox
                         value={isReturn}
-                        title={"Is Return"}
+                        title={"Is Return *"}
                         onChange={() => setIsReturn(!isReturn)}
                     />
 

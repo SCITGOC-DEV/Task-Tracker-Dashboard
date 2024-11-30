@@ -1,48 +1,53 @@
 import React, {useEffect, useState} from "react";
-import {useStateContext} from "../contexts/ContextProvider";
-import {Header} from "../components";
+import {useStateContext} from "../../../contexts/ContextProvider";
+import {Header} from "../../../components";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import {toast} from "react-toastify";
 import {useLazyQuery, useMutation} from "@apollo/client";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../../../hooks/useAuth";
 import {ActivityIndicator} from "react-native-web";
-import {InputWithError} from "../components/InputWithError";
-import {InputFieldWithSuggestion} from "../components/TextFieldWithSuggestions";
-import {AppConstants} from "../utils/Constants";
-import {
-  ADD_PROJECT_INVENTORY,
-  GET_INVENTORY_DATA_BY_SCIT,
-  GET_PROJECT_NAMES
-} from "../graphql/query/projectInventoryQueries";
-import PageRoutes from "../utils/PageRoutes";
-import {InputButton} from "../components/InnputButton";
-import {GET_LOCATIONS, GET_TASK_BY_ID, UPDATE_TASK_BY_ID} from "../graphql/query/getAllTasks";
-import {AppCheckBox} from "../components/AppCheckBox";
-import {ADD_TASK} from "../graphql/mutation/addTask";
-import {ProjectStatusValues} from "../utils/ProjectStatus";
+import {InputWithError} from "../../../components/InputWithError";
+import {InputFieldWithSuggestion} from "../../../components/TextFieldWithSuggestions";
+import {AppConstants} from "../../../utils/Constants";
+import {GET_PROJECT_NAMES} from "../../../graphql/query/projectInventoryQueries";
+import PageRoutes from "../../../utils/PageRoutes";
+import {InputButton} from "../../../components/InnputButton";
+import {GET_LOCATIONS, GET_TASK_BY_ID, UPDATE_TASK_BY_ID} from "../../../graphql/query/getAllTasks";
+import {AppCheckBox} from "../../../components/AppCheckBox";
+import {ProjectStatusValues} from "../../../utils/ProjectStatus";
+import AppDropdown from "../../../components/AppDropdown";
+import BackButton from "../../../components/BackButton";
+import {goBack} from "../../../utils/Methods";
+import AppIconButton from "../../../components/AppIconButton";
+import {IoMdCreate} from "react-icons/io";
+import {FaTrash} from "react-icons/fa";
 
 const EditTask = () => {
   const {currentColor} = useStateContext();
   const navigate = useNavigate()
   const {role} = useAuth()
-  const {id} = useParams()
   const [loading, setLoading] = useState(false)
   const [show, setShow] = useState(false);
   const [date, setDate] = useState(new Date());
 
   const today = new Date().toISOString();
+  const {projectId, taskId} = useParams()
+
+  console.log(`projectId: ${projectId} - taskId: ${taskId}`)
 
   // State management
   const [locationName, setLocationName] = useState('');
   const [project, setProject] = useState('');
-  const [projectId, setProjectId] = useState('')
+  //const [projectId, setProjectId] = useState('')
   const [taskName, setTaskName] = useState('');
   const [hardware, setHardware] = useState('');
   const [percentage, setPercentage] = useState(0)
   const [quantity, setQuantity] = useState('');
   const [note, setNote] = useState('');
-  const [startDate, setStartDate] = useState(today);
-  const [endDate, setEndDate] = useState(today);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [actualStartDate, setActualStartDate] = useState(null);
+  const [actualEndDate, setActualEndDate] = useState(null);
   const [status, setStatus] = useState(null)
 
   // Error states
@@ -54,14 +59,14 @@ const EditTask = () => {
   const [startDateError, setStartDateError] = useState('');
   const [percentageError, setPercentageError] = useState('')
   const [endDateError, setEndDateError] = useState('');
-  const [dispatch, setDispatch] = useState(false);
+  const [dispatch, setDispatch] = useState(null);
 
   const [getTaskById] = useLazyQuery(GET_TASK_BY_ID, {
     onCompleted: data => {
       const task = data.tasks[0];
+      console.log(data)
       setLocationName(task.fk_location_name || '');
       setProject(task.project?.project_name || '');
-      setProjectId(task.project?.id || '');
       setTaskName(task.task_name || '');
       setPercentage(task.percentage || 0);
       setHardware(task.hardware || '');
@@ -75,7 +80,7 @@ const EditTask = () => {
 
   useEffect(() => {
     getTaskById({
-      variables: {id: id}
+      variables: {id: taskId}
     })
   }, []);
 
@@ -97,32 +102,8 @@ const EditTask = () => {
       setLocationError('Location Name is required.');
       isValid = false;
     }
-    if (!project) {
-      setProjectError('Project is required.');
-      isValid = false;
-    }
     if (!taskName) {
       setTaskNameError('Task Name is required.');
-      isValid = false;
-    }
-    if (!hardware) {
-      setHardwareError('Hardware is required.');
-      isValid = false;
-    }
-    if (!quantity) {
-      setQuantityError('Quantity is required.');
-      isValid = false;
-    }
-    if (!percentage) {
-      setPercentageError('Percentage is required.');
-      isValid = false;
-    }
-    if (!startDate) {
-      setStartDateError('Start Date is required.');
-      isValid = false;
-    }
-    if (!endDate) {
-      setEndDateError('End Date is required.');
       isValid = false;
     }
 
@@ -153,11 +134,12 @@ const EditTask = () => {
   })
 
   const [updateTask] = useMutation(UPDATE_TASK_BY_ID, {
+    refetchQueries: [{query: GET_TASK_BY_ID, variables: {taskId: taskId}}],
     onCompleted: data => {
       setTimeout(() => {
         setLoading(false)
         toast.success("Updated task successfully")
-        navigate(PageRoutes.Tasks)
+        navigate(-1)
       }, [AppConstants.LOADING_DELAY])
     },
     onError: (error) => {
@@ -170,34 +152,28 @@ const EditTask = () => {
   const handleSubmit = () => {
     if (validateInputs()) {
       // Submit data or perform action
+      setLoading(true)
       const variables = {
-        id: id,
-        locationName: locationName,
-        projectId: projectId,
+        id: taskId,
+        fk_location_name: locationName,
+        fk_project_id: projectId,
+        task_name: taskName,
         hardware: hardware,
+        quantity: quantity,
         note: note,
         percentage: percentage,
-        taskName: taskName,
-        quantity: quantity,
-        startDateTime: startDate,
-        endDateTime: endDate,
+        start_date_time: startDate,
+        end_date_time: endDate,
         dispatch: dispatch,
-        status: status
+        status: status,
+        actual_start_date_time: actualStartDate,
+        actual_end_date_time: actualEndDate
       }
-      console.log(variables)
       updateTask({
         variables: variables
       })
     }
   };
-
-  const handleOnProjectChange = (query) => {
-    console.log(query);
-    getProjectNames({
-      variables: {query: `${query}%`}
-    })
-    setProject(query)
-  }
 
   const handleOnLocationChange = (query) => {
     getLocations({
@@ -207,19 +183,15 @@ const EditTask = () => {
 
   return (
 
-      <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-        <Header title={"Update Task"} category="Pages"/>
-        <Link
-            to={PageRoutes.Tasks}
-            className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
-            style={{background: currentColor}}
-        >
-          Back
-        </Link>
+      <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
+        <div className="flex mb-4 justify-between items-start">
+          <BackButton onBackClick={() => navigate(-1)}/>
+        </div>
+        <Header title={"Update Task"} category="Pages" showAddButton={false}/>
 
         <div className="w-full flex flex-col justify-center items-center">
           <div
-              className="sm:w-5/6 lg:w-3/6 md:4/6 w-full dark:bg-box-dark-bg border bg-white flex flex-col gap-4 dark:shadow-sm shadow-md sm:p-10 p-5 rounded-lg">
+              className="sm:w-5/6 lg:w-3/6 md:4/6 w-full mt-8 dark:bg-box-dark-bg border bg-white flex flex-col gap-4 dark:shadow-sm shadow-md sm:p-10 p-5 rounded-lg">
             <InputFieldWithSuggestion
                 className="min-w-full"
                 title="Location Name *"
@@ -229,20 +201,6 @@ const EditTask = () => {
                 onChange={(value) => setLocationName(value)}
                 onValueChange={handleOnLocationChange}
                 error={locationError}
-            />
-            <InputFieldWithSuggestion
-                className="min-w-full"
-                title="Project *"
-                placeholder="Select Project"
-                value={project}
-                suggestions={projectNames.map(project => project.project_name)} // Add your suggestions here
-                onChange={(value) => {
-                  const project = projectNames.find(pj => pj.project_name == value)
-                  setProjectId(project?.id)
-                  setProject(value)
-                }}
-                onValueChange={handleOnProjectChange}
-                error={projectError}
             />
             <InputWithError
                 className="min-w-full"
@@ -254,28 +212,11 @@ const EditTask = () => {
             />
             <InputWithError
                 className="min-w-full"
-                title="Hardware *"
+                title="Hardware"
                 placeholder="Enter Hardware"
                 value={hardware}
                 onChange={(e) => setHardware(e.target.value)}
                 error={hardwareError}
-            />
-            <InputWithError
-                className="min-w-full"
-                title="Percentage *"
-                placeholder="Enter Percentage"
-                value={percentage}
-                onChange={(e) => setPercentage(e.target.value)}
-                error={percentageError}
-            />
-            <InputFieldWithSuggestion
-                className="min-w-full"
-                title="Status"
-                placeholder="Enter status"
-                value={status}
-                suggestions={ProjectStatusValues}
-                onChange={(e) => setStatus(e)}
-                error={""}
             />
             <InputWithError
                 className="min-w-full"
@@ -290,7 +231,7 @@ const EditTask = () => {
                 title="Note"
                 placeholder="Enter Note"
                 value={note}
-                onCh  ange={(e) => setNote(e.target.value)}
+                onCh ange={(e) => setNote(e.target.value)}
             />
 
             <InputButton
@@ -312,6 +253,38 @@ const EditTask = () => {
                   // Implement your date selection logic here
                 }}
                 error={endDateError}
+            />
+            <InputWithError
+                className="min-w-full"
+                title="Percentage *"
+                placeholder="Enter Percentage"
+                value={percentage}
+                onChange={(e) => setPercentage(e.target.value)}
+                error={percentageError}
+            />
+
+            <AppDropdown
+                title={"Status"}
+                value={status}
+                options={ProjectStatusValues}
+                onSelected={(value) => setStatus(value)}/>
+
+            <InputButton
+                className="min-w-full"
+                title="Actual Start Date *"
+                buttonTitle={actualStartDate || 'Select Actual Start Date'}
+                onClick={(date) => {
+                  setActualStartDate(date);
+                }}
+            />
+
+            <InputButton
+                className="min-w-full"
+                title="Actual End Date *"
+                buttonTitle={actualEndDate || 'Select Actual End Date'}
+                onClick={(date) => {
+                  setActualEndDate(date);
+                }}
             />
 
             <AppCheckBox

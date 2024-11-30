@@ -54,36 +54,31 @@ query MyQuery ($query: String!) {
 
 export const ADD_TASK_INVENTORY =  gql `
 mutation MyMutation(
-  $project_id: Int!, 
-  $task_id: Int!, 
-  $inventory_id: Int!, 
-  $rent_date: timestamptz!, 
-  $return_date: timestamptz!, 
-  $qty: Int!, 
-  $status: String!, 
-  $request_user_name: String!, 
-  $request_date: timestamptz!, 
-  $remark: String, 
-  $actual_rent_date: timestamptz!, 
-  $actual_return_date: timestamptz!
+  $inventory_id: Int!,
+  $project_id: Int!,
+  $qty: Int!,
+  $rent_date: timestamptz!,
+  $request_date: timestamptz!,
+  $request_user_name: String!,
+  $return_date: timestamptz!,
+  $task_id: Int!,
+  $total_qty: Int!,
+  $remark: String!
 ) {
-  insert_task_inventories(
-    objects: {
-      project_id: $project_id, 
-      task_id: $task_id, 
-      inventory_id: $inventory_id, 
-      rent_date: $rent_date, 
-      return_date: $return_date, 
-      qty: $qty, 
-      status: $status, 
-      request_user_name: $request_user_name, 
-      request_date: $request_date, 
-      remark: $remark, 
-      actual_rent_date: $actual_rent_date, 
-      actual_return_date: $actual_return_date
-    }
+  task_assigned_inventory_to_task(
+    inventory_id: $inventory_id,
+    project_id: $project_id,
+    qty: $qty,
+    rent_date: $rent_date,
+    request_date: $request_date,
+    request_user_name: $request_user_name,
+    return_date: $return_date,
+    task_id: $task_id,
+    total_qty: $total_qty,
+    remark: $remark
   ) {
-    affected_rows
+    message
+    success
   }
 }`
 

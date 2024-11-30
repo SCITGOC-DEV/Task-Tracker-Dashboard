@@ -16,12 +16,12 @@ import {ADD_INVENTORY, GET_INVENTORY_BY_ID, UPDATE_INVENTORY_BY_ID} from "../../
 import {toast} from "react-toastify";
 import {formatDate} from "date-fns";
 import {convertTimestampToDate} from "../../data/dummy";
+import BackButton from "../../components/BackButton";
 
 const UpdateInventory = () => {
     const {currentColor} = useStateContext();
-
     const navigate = useNavigate();
-    const {id} = useParams()
+    const {id, inventoryId} = useParams()
     const [loading,setLoading] = useState(false)
 
     const {role} = useAuth()
@@ -261,14 +261,8 @@ const UpdateInventory = () => {
 
     return (
         <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-            <Header title={"Update inventory"} category={"Pages"}/>
-            <Link
-                to={PageRoutes.InventoryRecords}
-                className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
-                style={{background: currentColor}}
-            >
-                Back
-            </Link>
+            <BackButton onBackClick={() => navigate(-1)}/>
+            <Header title={"Update inventory"} category={"Pages"} showAddButton={false}/>
             <div className="w-full flex flex-col justify-center items-center">
                 <div
                     className="sm:w-5/6 lg:w-3/6 md:4/6 w-full dark:bg-box-dark-bg border bg-white flex flex-col gap-4 dark:shadow-sm shadow-md sm:p-10 p-5 rounded-lg">

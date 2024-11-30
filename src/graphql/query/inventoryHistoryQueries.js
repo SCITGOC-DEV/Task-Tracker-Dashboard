@@ -42,12 +42,14 @@ query MyQuery {
 `
 
 export const GET_ALL_INVENTORIES_BY_SCIT = gql`
-query MyQuery ($query: String!) {
-  inventories(limit: 5, where: {scit_control_number: {_ilike: $query}}) {
-    scit_control_number
+query MyQuery($controlNumber: String!) {
+  inventories(where: {scit_control_number: {_ilike: $controlNumber}}, limit: 5) {
     id
+    part_number
+    scit_control_number
   }
-}`
+}
+`
 
 export const GET_ALL_TASK_NAMES_BY_NAME = gql `
 query MyQuery ($query: String!) {
@@ -56,5 +58,35 @@ query MyQuery ($query: String!) {
     task_name
   }
 }
+`
+
+export const GET_ALL_INVENTORIES_BY_MANUFACTURER_AND_MODEL_TYPE = gql `
+query MyQuery($manufacturer: String, $modelType: String) {
+  inventories(where: {
+    _or: [
+      {inventory_category: {manufacturer: {_ilike: $manufacturer}}},
+      {inventory_category: {model_type: {_ilike: $modelType}}}
+    ]
+  }, limit: 5) {
+    id
+    inventory_category {
+      manufacturer
+      model_type
+    }
+  }
+}
+`
+
+export const GET_ALL_INVENTORIES_BY_MODEL_TYPE = gql `
+query MyQuery($manufacturer: String, $modelType: String) {
+  inventories(limit: 5, where: {inventory_category: {manufacturer: {_ilike: $manufacturer}, model_type: {_ilike: $modelType}}}) {
+    id
+    inventory_category {
+      manufacturer
+      model_type
+    }
+  }
+}
+
 `
 

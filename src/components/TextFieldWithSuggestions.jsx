@@ -51,13 +51,13 @@ export const InputFieldWithSuggestion = ({
             {/* Input Field with Suggestions */}
             <div className="relative">
                 <input
-                    className={`border border-gray-300 rounded p-2 ${className}`}
+                    className={`w-full py-2 pl-4 pr-10 text-gray-700 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 ${className}`}
                     placeholder={placeholder}
                     value={inputValue}
                     onChange={handleInputChange}
                 />
                 {filteredSuggestions.length > 0 && (
-                    <ul className="absolute left-0 right-0 mt-2 border border-gray-300 max-h-40 overflow-auto bg-white z-10">
+                    <ul className="absolute left-0 right-0 mt-2 border border-gray-300 rounded-lg shadow-md max-h-40 overflow-auto bg-white z-10">
                         {filteredSuggestions.map((suggestion, index) => (
                             <li
                                 key={index}

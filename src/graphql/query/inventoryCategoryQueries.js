@@ -91,32 +91,32 @@ query MyQuery ($query: String!) {
 }`
 
 export const ASSIGN_INVENTORY_TO_TASK = gql`
-  mutation MyMutation(
-    $inventory_id: Int!,
-    $project_id: Int!,
-    $request_user_name: String!,
-    $task_id: Int!,
-    $total_qty: Int!,
-    $qty: Int!,
-    $remark: String!,
-    $rent_date: timestamptz!,
-    $request_date: timestamptz!,
-    $return_date: timestamptz!
+  mutation AssignInventoryToTask(
+  $project_id: Int!,
+  $inventory_id: Int!,
+  $task_id: Int!,
+  $total_qty: Int!,
+  $rent_date: String!,
+  $return_date: String!,
+  $qty: Int!,
+  $remark: String!,
+  $request_user_name: String!,
+  $request_date: String!
+) {
+  task_assigned_inventory_to_task(
+    project_id: $project_id,
+    inventory_id: $inventory_id,
+    task_id: $task_id,
+    total_qty: $total_qty,
+    rent_date: $rent_date,
+    return_date: $return_date,
+    qty: $qty,
+    remark: $remark,
+    request_user_name: $request_user_name,
+    request_date: $request_date
   ) {
-    AssignedInventoryToTask(
-      inventory_id: $inventory_id,
-      project_id: $project_id,
-      request_user_name: $request_user_name,
-      task_id: $task_id,
-      total_qty: $total_qty,
-      qty: $qty,
-      remark: $remark,
-      rent_date: $rent_date,
-      request_date: $request_date,
-      return_date: $return_date
-    ) {
-      message
-      success
-    }
+    message
+    success
   }
+}
 `;

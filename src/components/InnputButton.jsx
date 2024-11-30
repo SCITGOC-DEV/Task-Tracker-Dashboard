@@ -13,7 +13,7 @@ export const InputButton = ({className, onClick, error, title, buttonTitle}) => 
     }
 
     return (
-        <div>
+        <div className="relative">
             <p className="text-gray-700">{title}</p>
             <Datepicker
                 onSelectedDateChanged={handleChange}

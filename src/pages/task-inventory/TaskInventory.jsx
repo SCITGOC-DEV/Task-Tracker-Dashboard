@@ -133,12 +133,11 @@ export function TaskInventory() {
         loading ? (<Loading />) : (
             <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
                 <Header title={"Task Inventories"} category="Pages" />
-
                 {
                     (role == "admin") ? (
                         <div className="flex flex-row justify-end">
                             <Link
-                                to={PageRoutes.AddTaskInventory}
+                                to={`${PageRoutes.AddTaskInventory}/:id/:taskId`}
                                 className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
                                 style={{ background: currentColor }}
                             >

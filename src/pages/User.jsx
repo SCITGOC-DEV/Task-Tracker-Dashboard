@@ -36,7 +36,7 @@ const User = () => {
                 setLoading(false)
                 setUsers(data.users)
                 setTotalItems(data?.users_aggregate.aggregate.count)
-                setPageCount(Math.ceil(totalItems / itemsPerPage))
+                setPageCount(Math.ceil(data?.users_aggregate.aggregate.count / itemsPerPage))
             }, 500)
         },
         onError: error => {
@@ -124,6 +124,9 @@ const User = () => {
                 headings={headings}
                 contents={contents}
                 actions={actions}
+                totalPages={pageCount}
+                currentPage={currentPage}
+                onPageClick={handlePageClick}
                 onEditClick={(user) => handleOnEditClick(user.id)}
                 onDeleteClick={handleOnDeleteClick}
                 errorProps={{
@@ -131,11 +134,6 @@ const User = () => {
                     description: "Get started by adding new users to the system. Once added, they will appear here."
                 }}
                 showDeleteOption={true}/>
-            <Pagination
-                totalPages={pageCount}
-                currentPage={currentPage}
-                handlePageClick={handlePageClick}
-            />
 
             <AlertSnackbar
                 message={error}

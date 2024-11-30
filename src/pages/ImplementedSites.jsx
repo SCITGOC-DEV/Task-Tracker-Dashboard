@@ -18,7 +18,7 @@ import Loading from "../components/Loading";
 import {ActionType} from "../utils/Constants";
 import {MdDelete, MdModeEdit} from "react-icons/md";
 
-const Locations = () => {
+const ImplementedSites = () => {
   const { currentColor } = useStateContext();
   const [currentPage, setCurrentPage] = React.useState(0);
   const itemsPerPage = 10;
@@ -128,7 +128,7 @@ const Locations = () => {
 
   return (
     <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
-      <Header title={"Locations"} category="Pages" />
+      <Header title={"Implemented Sites"} category="Pages" />
       <div className="flex flex-row justify-end">
         <AppButton title="Add Location" route={PageRoutes.AddLocation}/>
       </div>
@@ -152,4 +152,4 @@ const Locations = () => {
   );
 };
 
-export default Locations;
+export default ImplementedSites;

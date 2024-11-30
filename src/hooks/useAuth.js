@@ -22,7 +22,7 @@ const useAuth = () => {
         : null;
       if (token) {
         const user = jose.decodeJwt(token);
-        const role = user["https://hasura.io/jwt/claims"]["x-hasura-default-role"];
+        const role = user?.hasura?.["x-hasura-default-role"];
         return role
       } else return null
   }
@@ -33,8 +33,8 @@ const useAuth = () => {
         : null;
     if (token) {
       const user = jose.decodeJwt(token);
-      const role = user["https://hasura.io/jwt/claims"]["x-hasura-default-role"];
-      return user.user_name
+      //const role = user["https://hasura.io/jwt/claims"]["x-hasura-default-role"];
+      return user.userName
     } else return null
   }
 
@@ -45,8 +45,8 @@ const useAuth = () => {
         : null;
       if (token) {
         const user = jose.decodeJwt(token);
-        const role = user["https://hasura.io/jwt/claims"]["x-hasura-default-role"];
-          return user.user_id;
+        //const role = user["https://hasura.io/jwt/claims"]["x-hasura-default-role"];
+        return user.user_id;
         // if (role === "admin") {
         //   return user.user_id;
         // } else {

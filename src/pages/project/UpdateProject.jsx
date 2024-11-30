@@ -22,6 +22,7 @@ import {
 } from "../../graphql/query/projectQueries";
 import {AppConstants} from "../../utils/Constants";
 import AppDropdown from "../../components/AppDropdown";
+import BackButton from "../../components/BackButton";
 
 const UpdateProject = () => {
     const { currentColor } = useStateContext();
@@ -81,11 +82,14 @@ const UpdateProject = () => {
                 awaitRefetchQueries: true,
             },
         ],
+        fetchPolicy: "network-only",
         onCompleted: data => {
             setTimeout(() => {
                 setLoading(false)
-                navigate(PageRoutes.Projects)
-                toast.success("Project updated successfully.");
+                if (data.project_update_project.success == true) {
+                    navigate(-1)
+                    toast.success("Project updated successfully.");
+                } else toast.error(data.project_update_project.message)
             }, AppConstants.LOADING_DELAY)
         },
         onError: (e) => {
@@ -106,27 +110,6 @@ const UpdateProject = () => {
             setProjectNameError('');
         }
 
-        if (!startDate) {
-            setStartDateError('Start date is required');
-            isValid = false;
-        } else {
-            setStartDateError('');
-        }
-
-        if (!endDate) {
-            setEndDateError('End date is required');
-            isValid = false;
-        } else {
-            setEndDateError('');
-        }
-
-        if (!percentage) {
-            setPercentageError('Percentage is required');
-            isValid = false;
-        } else {
-            setPercentageError('');
-        }
-
         // Submit form if valid
         if (isValid) {
             setLoading(true)
@@ -134,14 +117,12 @@ const UpdateProject = () => {
                 id: id,
                 project_name: projectName,
                 project_description: projectDescription,
-                created_by: createdBy,
                 start_date: startDate,
                 percentage: percentage,
                 end_date: endDate,
                 status: status,
                 actual_start_date: actualStartDate,
-                actual_end_date: actualEndDate,
-                updated_at: new Date().toISOString()
+                actual_end_date: actualEndDate
             };
 
             updateProject({
@@ -153,14 +134,8 @@ const UpdateProject = () => {
     return (
 
         <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-            <Header title={"Update Project"} category="Pages" />
-            <Link
-                to={PageRoutes.Projects}
-                className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
-                style={{ background: currentColor }}
-            >
-                Back
-            </Link>
+            <BackButton onBackClick={() => navigate(-1)} />
+            <Header title={"Update Project"} category="Pages" showAddButton={false} />
 
             <div className="w-full flex flex-col justify-center items-center">
                 <div
@@ -182,15 +157,6 @@ const UpdateProject = () => {
                         placeholder="Enter project description"
                         value={projectDescription}
                         onChange={(e) => setProjectDescription(e.target.value)}
-                        error=""
-                    />
-
-                    <InputWithError
-                        className="min-w-full"
-                        title="Created By *"
-                        placeholder="Enter creator's name"
-                        value={createdBy}
-                        onChange={(e) => setCreatedBy(e.target.value)}
                         error=""
                     />
 

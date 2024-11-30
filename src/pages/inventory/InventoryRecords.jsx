@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "../../components/DataTable";
 import { Header } from "../../components";
-import { Link, useNavigate } from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import { useStateContext } from "../../contexts/ContextProvider";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { DELETE_INVENTORY_CATEGORY, getAllInventoryCategories } from "../../graphql/query/inventoryCategoryQueries";
@@ -22,6 +22,7 @@ export function InventoryRecords() {
     const navigate = useNavigate()
     const itemsPerPage = 10;
     const { role } = useAuth()
+    const {id} = useParams()
 
     const [currentPage, setCurrentPage] = useState(0);
     const [pageCount, setPageCount] = useState(0);
@@ -29,7 +30,10 @@ export function InventoryRecords() {
     const [totalItems, setTotalItems] = useState(0)
     const [contents, setContents] = useState([]);
     const [open, setOpen] = useState(false)
-    const [id, setId] = useState(0)
+    const [inventoryId, setInventoryId] = useState(0)
+
+    const [manufacturer, setManufacturer] = useState(null)
+    const [modelType, setModelType] = useState(null)
 
     const [deleteInventoryCategory] = useMutation(DELETE_INVENTORY_CATEGORY, {
         refetchQueries: [
@@ -43,7 +47,7 @@ export function InventoryRecords() {
             setLoading(false)
             toast.success("Task have been deleted! Successfully!");
             loadAllInventoryCategories({
-                variables: { limit: itemsPerPage, offset: currentPage * itemsPerPage }
+                variables: { id: id, limit: itemsPerPage, offset: currentPage * itemsPerPage }
             });
         },
         onError: (error) => {
@@ -57,12 +61,14 @@ export function InventoryRecords() {
         onCompleted: (data) => {
             setTimeout(() => {
                 setLoading(false);
-                const result = data.inventories.map(inventory => {
+                setManufacturer(data.inventory_categories[0].manufacturer)
+                setModelType(data.inventory_categories[0].model_type)
+                const result = data.inventory_categories[0].inventory.map(inventory => {
                     const {
                         inventory_category: {
                             manufacturer = "N/A",
                             model_type = "N/A"
-                        } = {},                       // Fallback to empty object if `inventory_category` is null or undefined
+                        } = {},                      // Fallback to empty object if `inventory_category` is null or undefined
                         id = "N/A",
                         quantity = "N/A",
                         unit_price = "N/A",
@@ -70,17 +76,17 @@ export function InventoryRecords() {
                     } = inventory;
 
                     return [
-                        id,
-                        manufacturer,
-                        model_type,
-                        quantity,
-                        unit_price,
-                        date_purchase_received
+                        id,                            // ID
+                        manufacturer,                  // Manufacturer
+                        model_type,                    // Model Type
+                        quantity,                      // Quantity
+                        unit_price,                    // Unit Price
+                        date_purchase_received         // Date Purchase Received
                     ];
                 });
                 setContents(result);
-                setTotalItems(data.total.aggregate.count);
-                setPageCount(Math.ceil(data.total.aggregate.count / itemsPerPage));
+                setTotalItems(data.inventory_categories[0].total.aggregate.count);
+                setPageCount(Math.ceil(data.inventory_categories[0].total.aggregate.count / itemsPerPage));
             }, 600)
         },
         onError: (error) => {
@@ -92,7 +98,7 @@ export function InventoryRecords() {
     useEffect(() => {
         if (!currentPage) setLoading(true);
         loadAllInventoryCategories({
-            variables: { limit: itemsPerPage, offset: currentPage * itemsPerPage }
+            variables: { id: id, limit: itemsPerPage, offset: currentPage * itemsPerPage }
         });
     }, [currentPage]);
 
@@ -127,13 +133,13 @@ export function InventoryRecords() {
         setCurrentPage(selected);
     };
 
-    const handleOnEditClick = (categoryId) => {
+    const handleOnEditClick = (inventoryId) => {
         //console.log(id)
-        navigate(`/inventory/update/${categoryId}`)
+        navigate(`/inventory-categories/inventories/update/${id}/${inventoryId}`)
     }
 
     const handleOnDeleteClick = (id) => {
-        setId(id)
+        setInventoryId(id)
         setOpen(true)
     }
 
@@ -141,7 +147,7 @@ export function InventoryRecords() {
         setOpen(false)
         deleteInventoryCategory({
             variables: {
-                id: id
+                id: inventoryId
             }
         })
     }
@@ -151,15 +157,29 @@ export function InventoryRecords() {
         loading ? (<Loading />) : (
             <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
                 <Header title={"Inventories"} category="Pages" />
+
+                <div className="p-4 bg-white rounded-md border-b my-4">
+                    <h2 className="text-xl font-bold text-gray-800 mb-4">Product Details</h2>
+                    <div className="space-y-2">
+                        <div>
+                            <span className="block font-semibold text-gray-600">Manufacturer:</span>
+                            <span className="text-gray-700">{manufacturer}</span>
+                        </div>
+                        <div>
+                            <span className="block font-semibold text-gray-600">Model Type:</span>
+                            <span className="text-gray-700">{modelType}</span>
+                        </div>
+                    </div>
+                </div>
                 {
                     (role == "admin") ? (
                         <div className="flex flex-row justify-end">
                             <Link
-                                to={PageRoutes.AddInventory}
+                                to={`/inventory-categories/inventories/add/${id}`}
                                 className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
-                                style={{ background: currentColor }}
+                                style={{background: currentColor}}
                             >
-                                Add Inventory
+                            Add Inventory
                             </Link>
                         </div>
                     ) : <div></div>

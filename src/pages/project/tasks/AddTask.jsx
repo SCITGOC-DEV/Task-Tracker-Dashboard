@@ -1,25 +1,24 @@
 import React, {useState} from "react";
-import {useStateContext} from "../contexts/ContextProvider";
-import {Header} from "../components";
-import {Link, useNavigate} from "react-router-dom";
+import {useStateContext} from "../../../contexts/ContextProvider";
+import {Header} from "../../../components";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import {toast} from "react-toastify";
 import {useLazyQuery, useMutation} from "@apollo/client";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../../../hooks/useAuth";
 import {ActivityIndicator} from "react-native-web";
-import {InputWithError} from "../components/InputWithError";
-import {InputFieldWithSuggestion} from "../components/TextFieldWithSuggestions";
-import {AppConstants} from "../utils/Constants";
-import {
-    ADD_PROJECT_INVENTORY,
-    GET_INVENTORY_DATA_BY_SCIT,
-    GET_PROJECT_NAMES
-} from "../graphql/query/projectInventoryQueries";
-import PageRoutes from "../utils/PageRoutes";
-import {InputButton} from "../components/InnputButton";
-import {GET_LOCATIONS} from "../graphql/query/getAllTasks";
-import {AppCheckBox} from "../components/AppCheckBox";
-import {ADD_TASK} from "../graphql/mutation/addTask";
-import {ProjectStatusValues} from "../utils/ProjectStatus";
+import {InputWithError} from "../../../components/InputWithError";
+import {InputFieldWithSuggestion} from "../../../components/TextFieldWithSuggestions";
+import {AppConstants} from "../../../utils/Constants";
+import {GET_PROJECT_NAMES} from "../../../graphql/query/projectInventoryQueries";
+import PageRoutes from "../../../utils/PageRoutes";
+import {InputButton} from "../../../components/InnputButton";
+import {GET_LOCATIONS} from "../../../graphql/query/getAllTasks";
+import {AppCheckBox} from "../../../components/AppCheckBox";
+import {ADD_TASK} from "../../../graphql/mutation/addTask";
+import {ProjectStatusValues} from "../../../utils/ProjectStatus";
+import AppDropdown from "../../../components/AppDropdown";
+import BackButton from "../../../components/BackButton";
+import {GET_ALL_TASKS_AND_INVENTORIES_BY_PROJECT_ID} from "../../../graphql/query/projectQueries";
 
 const AddTask = () => {
     const {currentColor} = useStateContext();
@@ -29,12 +28,13 @@ const AddTask = () => {
     const [show, setShow] = useState(false);
     const [date, setDate] = useState(new Date());
 
+    const {id} = useParams()
+
     const today = new Date().toISOString();
 
     // State management
     const [locationName, setLocationName] = useState('');
     const [project, setProject] = useState('');
-    const [projectId, setProjectId] = useState('')
     const [taskName, setTaskName] = useState('');
     const [hardware, setHardware] = useState('');
     const [quantity, setQuantity] = useState('');
@@ -70,28 +70,8 @@ const AddTask = () => {
             setLocationError('Location Name is required.');
             isValid = false;
         }
-        if (!project) {
-            setProjectError('Project is required.');
-            isValid = false;
-        }
         if (!taskName) {
             setTaskNameError('Task Name is required.');
-            isValid = false;
-        }
-        if (!hardware) {
-            setHardwareError('Hardware is required.');
-            isValid = false;
-        }
-        if (!quantity) {
-            setQuantityError('Quantity is required.');
-            isValid = false;
-        }
-        if (!startDate) {
-            setStartDateError('Start Date is required.');
-            isValid = false;
-        }
-        if (!endDate) {
-            setEndDateError('End Date is required.');
             isValid = false;
         }
 
@@ -122,15 +102,22 @@ const AddTask = () => {
     })
 
     const [addTask] = useMutation(ADD_TASK, {
+        refetchQueries: [{query: GET_ALL_TASKS_AND_INVENTORIES_BY_PROJECT_ID}],
+        fetchPolicy: "network-only",
         onCompleted: data => {
             setTimeout(() => {
                 setLoading(false)
-                toast.success("Added task successfully")
-                navigate(PageRoutes.Tasks)
+                if (data.task_create_task.success == true) {
+                    toast.success("Added task successfully")
+                    navigate(-1)
+                } else  {
+                    toast.error(data.task_create_task.message)
+                }
             }, [AppConstants.LOADING_DELAY])
         },
         onError: (error) => {
             setLoading(false)
+            console.log(error.message)
             toast.error(error.message)
         }
     })
@@ -139,9 +126,10 @@ const AddTask = () => {
     const handleSubmit = () => {
         if (validateInputs()) {
             // Submit data or perform action
+            setLoading(true)
             const variables = {
                 fk_location_name: locationName,
-                fk_project_id: projectId,
+                fk_project_id: id,
                 hardware: hardware,
                 note: note,
                 percentage: 0,
@@ -159,14 +147,6 @@ const AddTask = () => {
         }
     };
 
-    const handleOnProjectChange = (query) => {
-        console.log(query);
-        getProjectNames({
-            variables: {query: `${query}%`}
-        })
-        setProject(query)
-    }
-
     const handleOnLocationChange = (query) => {
         getLocations({
             variables: {query: `${query}%`}
@@ -175,15 +155,11 @@ const AddTask = () => {
 
     return (
 
-        <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-            <Header title={"Add Task"} category="Pages"/>
-            <Link
-                to={PageRoutes.Tasks}
-                className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
-                style={{background: currentColor}}
-            >
-                Back
-            </Link>
+        <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
+            <div className="flex mb-4 justify-between items-start">
+                <BackButton onBackClick={() => navigate(-1)}/>
+            </div>
+            <Header title={"Add Task"} category="" showAddButton={false}/>
 
             <div className="w-full flex flex-col justify-center items-center">
                 <div
@@ -197,20 +173,6 @@ const AddTask = () => {
                         onChange={(value) => setLocationName(value)}
                         onValueChange={handleOnLocationChange}
                         error={locationError}
-                    />
-                    <InputFieldWithSuggestion
-                        className="min-w-full"
-                        title="Project *"
-                        placeholder="Select Project"
-                        value={project}
-                        suggestions={projectNames.map(project => project.project_name)} // Add your suggestions here
-                        onChange={(value) => {
-                            const project = projectNames.find(pj => pj.project_name == value)
-                            setProjectId(project?.id)
-                            setProject(value)
-                        }}
-                        onValueChange={handleOnProjectChange}
-                        error={projectError}
                     />
                     <InputWithError
                         className="min-w-full"
@@ -227,15 +189,6 @@ const AddTask = () => {
                         value={hardware}
                         onChange={(e) => setHardware(e.target.value)}
                         error={hardwareError}
-                    />
-                    <InputFieldWithSuggestion
-                        className="min-w-full"
-                        title="Status"
-                        placeholder="Enter status"
-                        value={status}
-                        suggestions={ProjectStatusValues}
-                        onChange={(e) => setStatus(e)}
-                        error={""}
                     />
                     <InputWithError
                         className="min-w-full"
@@ -273,6 +226,12 @@ const AddTask = () => {
                         }}
                         error={endDateError}
                     />
+
+                    <AppDropdown
+                        title="Status"
+                        value={status}
+                        options={ProjectStatusValues}
+                        onSelected={(value) => setStatus(value)}/>
 
                     <AppCheckBox
                         value={dispatch}

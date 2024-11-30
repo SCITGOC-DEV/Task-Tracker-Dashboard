@@ -8,8 +8,8 @@ module.exports = {
   darkMode: 'class',
   theme: {
     fontFamily: {
-      display: ['Open Sans', 'sans-serif'],
-      body: ['Open Sans', 'sans-serif'],
+      display: ['Inter', 'sans-serif'],
+      body: ['Inter', 'sans-serif'],
     },
     extend: {
       fontSize: {

@@ -2,14 +2,14 @@ import { gql } from "@apollo/client";
 
 export const getAllTrackingTasks = gql`
   query MyQuery($offset: Int!, $limit: Int!) {
-    tracking(order_by: { created_at: desc }, limit: $limit, offset: $offset) {
+    tasks(order_by: { created_at: desc }, limit: $limit, offset: $offset) {
       created_at
       dispatch
       end_coords
       end_date_time
       fk_location_name
-      fk_task_name
-      fk_user_name
+      task_name
+      created_by
       hardware
       id
       note
@@ -20,7 +20,7 @@ export const getAllTrackingTasks = gql`
       start_date_time
       updated_at
     }
-    tracking_aggregate {
+    tasks_aggregate {
       aggregate {
         count
       }

@@ -13,7 +13,7 @@ export const InputWithError = ({
         <div>
             <p className={`mb-1 min-w-full`}>{title}</p>
                 <Input
-                    className= {`${className} border rounded p-2 `}
+                    className= {`${className} w-full py-2 pl-4 pr-10 text-gray-700 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 `}
                     placeholder={placeholder}
                     onChange={onChange}
                     value={value}

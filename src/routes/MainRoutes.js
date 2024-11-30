@@ -21,8 +21,8 @@ import AddInventoryCategory from "../pages/AddInventoryCategory";
 import UpdateInventoryCategory from "../pages/EditInventoryCategory";
 import AddInventory from "../pages/inventory/AddInventory";
 import { InventoryRecords } from "../pages/inventory/InventoryRecords";
-import AddInventoryToTask from "../pages/inventory_history/AddInventoryToTask";
-import { InventoryHistory } from "../pages/inventory_history/InventoryHistory";
+import AddInventoryToTask from "../pages/inventory_to_task/AddInventoryToTask";
+import { InventoryToTask } from "../pages/inventory_to_task/InventoryToTask";
 import { InventoryCategories } from "../pages/InventoryCategories";
 import ProjectAdminHome from "../pages/project-admin/ProjectAdminHome";
 import AddProject from "../pages/project/AddProject";
@@ -37,6 +37,9 @@ import {TaskInventory} from "../pages/task-inventory/TaskInventory";
 import AddTaskInventory from "../pages/task-inventory/AddTaskInventory";
 import EditTaskInventory from "../pages/task-inventory/EditTaskInventory";
 import UpdateInventory from "../pages/inventory/UpdateInventory";
+import ProjectDetails from "../pages/project/ProjectDetails";
+import TaskDetails from "../pages/project/tasks/TaskDetails";
+import InventoryDetails from "../pages/inventory/InventoryDetails";
 
 
 const MainRoutes = {
@@ -64,15 +67,19 @@ const MainRoutes = {
       element: <ChangeUserPassword />,
     },
     {
-      path: "/tasks",
+      path: PageRoutes.Tasks,
       element: <Task />,
     },
     {
-      path: "/tasks/add",
+      path: PageRoutes.TaskDetails,
+      element: <TaskDetails />,
+    },
+    {
+      path: PageRoutes.AddTask,
       element: <AddTask />,
     },
     {
-      path: "/tasks/edit-task/:id",
+      path: PageRoutes.EditTask,
       element: <EditTask />,
     },
     {
@@ -80,7 +87,7 @@ const MainRoutes = {
       element: <TaskInventory />,
     },
     {
-      path: PageRoutes.AddTaskInventory,
+      path: `${PageRoutes.AddTaskInventory}/:id/:taskId`,
       element: <AddTaskInventory />,
     },
 
@@ -141,6 +148,10 @@ const MainRoutes = {
       element: <AddInventory/>
     },
     {
+      path: `${PageRoutes.InventoryDetails}/:id`,
+      element: <InventoryDetails/>
+    },
+    {
       path: PageRoutes.InventoryRecords,
       element: <InventoryRecords/>
     },
@@ -149,16 +160,20 @@ const MainRoutes = {
       element: <UpdateInventory/>
     },
     {
-      path: PageRoutes.InventoryHistory,
-      element: <InventoryHistory/>
+      path: PageRoutes.InventoryToTask,
+      element: <InventoryToTask/>
     },
     {
-      path: PageRoutes.AddInventoryHistory,
+      path: PageRoutes.AddInventoryToTask,
       element: <AddInventoryToTask/>
     },
     {
       path: PageRoutes.Projects,
       element: <Projects/>
+    },
+    {
+      path: PageRoutes.ProjectDetails,
+      element: <ProjectDetails/>
     },
     {
       path: PageRoutes.AddProject,

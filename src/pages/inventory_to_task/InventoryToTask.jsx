@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "../../components/DataTable";
 import { Header } from "../../components";
-import { Link, useNavigate } from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import { useStateContext } from "../../contexts/ContextProvider";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { DELETE_INVENTORY_CATEGORY, getAllInventoryCategories } from "../../graphql/query/inventoryCategoryQueries";
@@ -16,11 +16,14 @@ import useAuth from "../../hooks/useAuth";
 import { GET_ALL_INVENTORY_RECORDS } from "../../graphql/query/inventoryQueries";
 import { GET_ALL_INVENTORY_HISTORIES } from "../../graphql/query/inventoryHistoryQueries";
 
-export function InventoryHistory() {
+export function InventoryToTask() {
     const { currentColor } = useStateContext();
     const navigate = useNavigate()
     const itemsPerPage = 10;
     const { role } = useAuth()
+    const {id,taskId} = useParams()
+
+    console.log(id, taskId);
 
     const [currentPage, setCurrentPage] = useState(0);
     const [pageCount, setPageCount] = useState(0);
@@ -28,7 +31,7 @@ export function InventoryHistory() {
     const [totalItems, setTotalItems] = useState(0)
     const [contents, setContents] = useState([]);
     const [open, setOpen] = useState(false)
-    const [id, setId] = useState(0)
+    const [inventoryId, setInventoryId] = useState(0)
 
     const [deleteInventoryCategory] = useMutation(DELETE_INVENTORY_CATEGORY, {
         refetchQueries: [
@@ -101,7 +104,7 @@ export function InventoryHistory() {
     }
 
     const handleOnDeleteClick = (id) => {
-        setId(id)
+        setInventoryId(id)
         setOpen(true)
     }
 
@@ -109,7 +112,7 @@ export function InventoryHistory() {
         setOpen(false)
         deleteInventoryCategory({
             variables: {
-                id: id
+                id: inventoryId
             }
         })
     }
@@ -118,12 +121,20 @@ export function InventoryHistory() {
 
         loading ? (<Loading />) : (
             <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
-                <Header title={"Add Inventory To Task"} category="Pages" />
+                <Header title={"Task Inventories"} category="Pages" />
+
+                <Link
+                    to={`/projects/tasks/${id}`}
+                    className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
+                    style={{ background: currentColor }}
+                >
+                    Back
+                </Link>
                 {
                     (role == "admin") ? (
                         <div className="flex flex-row justify-end">
                             <Link
-                                to={PageRoutes.AddInventoryHistory}
+                                to={`/projects/tasks/task-inventories/add/${id}/${taskId}`}
                                 className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
                                 style={{ background: currentColor }}
                             >

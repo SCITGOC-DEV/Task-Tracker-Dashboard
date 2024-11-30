@@ -1,13 +1,22 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import ReactPaginate from "react-paginate";
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 import { useStateContext } from "../contexts/ContextProvider";
 
 const Pagination = ({ totalPages, currentPage, handlePageClick }) => {
-    const { currentColor } = useStateContext();
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        // Set visibility to true after a delay to allow for transition
+        const timer = setTimeout(() => {
+            setIsVisible(true);
+        }, 100); // Adjust the delay as necessary
+
+        return () => clearTimeout(timer);
+    }, [totalPages]); // Update visibility when totalPages change
 
     return (
-        <div>
+        <div className={`transition-all ease-in-out duration-150 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
             <ReactPaginate
                 onPageChange={handlePageClick}
                 breakLabel={<span className="dark:text-white text-black">...</span>}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "../../components/DataTable";
 import { Header } from "../../components";
-import { Link, useNavigate } from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import { useStateContext } from "../../contexts/ContextProvider";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { DELETE_INVENTORY_CATEGORY, getAllInventoryCategories } from "../../graphql/query/inventoryCategoryQueries";
@@ -28,14 +28,16 @@ export function ProjectInventory() {
     const navigate = useNavigate()
     const itemsPerPage = 10;
     const { role } = useAuth()
+    const {id} = useParams()
 
     const [currentPage, setCurrentPage] = useState(0);
+    const [projectName, setProjectName] = useState(null)
     const [pageCount, setPageCount] = useState(0);
     const [loading, setLoading] = useState(false);
     const [totalItems, setTotalItems] = useState(0)
     const [contents, setContents] = useState([]);
     const [open, setOpen] = useState(false)
-    const [id, setId] = useState(0)
+    //const [id, setId] = useState(0)
 
     const [deleteProjectById] = useMutation(DELETE_PROJECT_INVENTORY, {
         refetchQueries: [
@@ -64,22 +66,20 @@ export function ProjectInventory() {
             setTimeout(() => {
                 setLoading(false);
                 console.log(data)
-                const result = data.project_inventories.map((inventory) => [
-                    inventory.id || "N/A",                                          // Inventory ID
-                    inventory.project?.project_name || "N/A",                       // Project Name
-                    inventory.project?.percentage || "N/A",                         // Percentage
-                    inventory.inventory?.admin_name || "N/A",                       // Admin Name
-                    inventory.inventory?.email_address || "N/A",                    // Email Address
-                    inventory.inventory?.country || "N/A",                          // Country
-                    inventory.inventory?.contact_number || "N/A",                   // Contact Number
-                    inventory.inventory?.quantity || "N/A",                         // Quantity
-                    inventory.inventory?.scit_control_number || "N/A",              // SCIT Control Number
-                    inventory.inventory?.serial_number_start || "N/A"               // Serial Number Start
+                setProjectName(data.projects[0].project_name)
+                const result = data.projects[0].project_inventory.map((inventory) => [
+                    inventory.id || "N/A",                                         // Inventory ID
+                    inventory.status || "N/A",                                     // Status
+                    inventory.total_qty || "N/A",                                  // Total Quantity
+                    inventory.used_qty || "N/A",                                   // Used Quantity
+                    inventory.inventory.inventory_category.manufacturer || "N/A",  // Manufacturer
+                    inventory.inventory.inventory_category.model_type || "N/A",    // Model Type
+                    inventory.inventory.inventory_category.device || "N/A"         // Device
                 ]);
 
                 setContents(result);
-                setTotalItems(data.total.aggregate.count);
-                setPageCount(Math.ceil(data.total.aggregate.count / itemsPerPage));
+                setTotalItems(data.projects[0].total.aggregate.count);
+                setPageCount(Math.ceil(data.projects[0].total.aggregate.count / itemsPerPage));
             }, 600)
         },
         onError: (error) => {
@@ -91,21 +91,18 @@ export function ProjectInventory() {
     useEffect(() => {
         if (!currentPage) setLoading(true);
         loadAllProjects({
-            variables: { limit: itemsPerPage, offset: currentPage * itemsPerPage }
+            variables: { id: id,limit: itemsPerPage, offset: currentPage * itemsPerPage }
         });
     }, [currentPage]);
 
     const headings = [
-        "Inventory ID",
-        "Project Name",
-        "Percentage",
-        "Admin Name",
-        "Email Address",
-        "Country",
-        "Contact Number",
-        "Quantity",
-        "SCIT Control Number",
-        "Serial Number Start"
+        "Inventory ID",            // ID of the inventory
+        "Status",                  // Status of the inventory (e.g., "Using", "Returned")
+        "Total Quantity",          // Total quantity of inventory items
+        "Used Quantity",           // Quantity already used
+        "Manufacturer",            // Manufacturer of the inventory device
+        "Model Type",              // Model type of the inventory device
+        "Device"                   // Device type of the inventory
     ];
 
     const actions = [
@@ -151,12 +148,19 @@ export function ProjectInventory() {
     return (
         loading ? (<Loading />) : (
             <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
-                <Header title={"Project Inventories"} category="Pages" />
+                <Header title={`Project Inventories ( ${projectName} )`} category="Pages" />
+                <Link
+                    to={`/projects`}
+                    className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
+                    style={{ background: currentColor }}
+                >
+                    Back
+                </Link>
                 {
                     (role == "admin") ? (
                         <div className="flex flex-row justify-end">
                             <Link
-                                to={PageRoutes.AddProjectInventory}
+                                to={`/projects/project-inventory/add/${id}`}
                                 className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
                                 style={{ background: currentColor }}
                             >

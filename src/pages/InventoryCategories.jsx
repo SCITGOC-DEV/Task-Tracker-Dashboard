@@ -16,6 +16,7 @@ import useAuth from "../hooks/useAuth";
 import {formatDate} from "../data/dummy";
 import {ActionType} from "../utils/Constants";
 import {MdDelete, MdModeEdit} from "react-icons/md";
+import {GrAdd} from "react-icons/gr";
 
 export function InventoryCategories() {
     const { currentColor } = useStateContext();
@@ -99,6 +100,16 @@ export function InventoryCategories() {
                 }
             ]
         },
+        {
+            type: ActionType.Dropdown,
+            actions: [
+                {
+                    label: "Add Inventory",
+                    icon: <GrAdd/>,
+                    onClick: (id) => navigate(`/inventory-categories/inventories/${id}`),
+                }
+            ]
+        }
     ]
 
     const contents = inventoryCategories.map(category => {
@@ -164,6 +175,9 @@ export function InventoryCategories() {
                     headings={headings}
                     contents={contents}
                     actions={actions}
+                    totalPages={pageCount}
+                    currentPage={currentPage}
+                    onPageClick={handlePageClick}
                     onEditClick={handleOnEditClick}
                     onDeleteClick={handleOnDeleteClick}
                 />
@@ -176,12 +190,6 @@ export function InventoryCategories() {
                     description={"Are you sure you want to delete task category? All of your data will be permanently removed. This action cannot be undone."}
                     confirmTitle={"Delete"}
                     dismissTitle={"Cancel"}
-                />
-
-                <Pagination
-                    totalPages={pageCount}
-                    currentPage={currentPage}
-                    handlePageClick={handlePageClick}
                 />
             </div>
         )

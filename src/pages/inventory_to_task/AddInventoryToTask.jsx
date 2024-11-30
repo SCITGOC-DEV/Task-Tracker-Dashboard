@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import { useStateContext } from "../../contexts/ContextProvider";
 import { Button, Header, TextField } from "../../components";
-import { Link, useNavigate } from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import PageRoutes from "../../utils/PageRoutes";
 import { toast } from "react-toastify";
 import {useLazyQuery, useMutation} from "@apollo/client";
@@ -26,6 +26,8 @@ import {InputButton} from "../../components/InnputButton";
 
 const AddInventoryToTask = () => {
     const { currentColor } = useStateContext();
+    const {id,taskId} = useParams()
+    console.log(id)
     const today = new Date().toISOString()
     const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
@@ -39,8 +41,6 @@ const AddInventoryToTask = () => {
     const [inventoryId, setInventoryId] = useState(null)
 
     const [tasks, setTasks] = useState([])
-    const [taskName, setTaskName] = useState("");
-    const [taskId, setTaskId] = useState(null)
 
     const [quantity, setQuantity] = useState(null)
     const [remark, setRemark] = useState(null)
@@ -57,6 +57,7 @@ const AddInventoryToTask = () => {
         inventoryId: '',
         quantity: '',
         rentDate: '',
+        totalQuantity: '',
         requestDate: '',
         requestUserName: '',
         returnDate: '',
@@ -100,7 +101,7 @@ const AddInventoryToTask = () => {
 
     const [getAllInventoriesByScit] = useLazyQuery(GET_ALL_INVENTORIES_BY_SCIT, {
         onCompleted: data => {
-            setInventories(data.inventories)
+            setInventories(data.project_inventories)
         }
     })
 
@@ -113,14 +114,11 @@ const AddInventoryToTask = () => {
     const validateForm = () => {
         const newErrors = {};
 
-        if (!projectId) newErrors.projectId = 'Project ID is required';
         if (!inventoryId) newErrors.inventoryId = 'Inventory ID is required';
-        if (!quantity || quantity <= 0) newErrors.quantity = 'Quantity must be a positive number';
+        if (!totalQuantity || totalQuantity <= 0) newErrors.totalQuantity = 'Total quantity must be a positive number';
         //if (!rentDate) newErrors.rentDate = 'Rent date is required';
         //if (!requestDate) newErrors.requestDate = 'Request date is required';
         if (!requestUserName) newErrors.requestUserName = 'Request user name is required';
-        //if (!returnDate) newErrors.returnDate = 'Return date is required';
-        if (!taskId) newErrors.taskId = 'Task ID is required';
 
         // Add additional validation rules as necessary for your fields
 
@@ -136,7 +134,7 @@ const AddInventoryToTask = () => {
     }, []);
 
     const handleOnInventoryQueryChange = (query) => {
-        getAllInventoriesByScit({variables: {query: `${query}%`}})
+        getAllInventoriesByScit({variables: {project_id: id, query: `${query}%`}})
     }
 
     const handleOnTaskQueryChange = (query) => {
@@ -154,7 +152,7 @@ const AddInventoryToTask = () => {
             setLoading(true)
             const variables = {
                 inventory_id: inventoryId,
-                project_id: projectId,
+                project_id: id,
                 request_user_name: requestUserName,
                 task_id: taskId,
                 total_qty: totalQuantity,
@@ -173,7 +171,7 @@ const AddInventoryToTask = () => {
         <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
             <Header title={"Add Inventory To Task"} category="Pages" />
             <Link
-                to={PageRoutes.InventoryRecords}
+                to={`/projects/tasks/task-inventories/${id}/${taskId}`}
                 className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
                 style={{ background: currentColor }}
             >
@@ -184,25 +182,14 @@ const AddInventoryToTask = () => {
                 <div
                     className="sm:w-5/6 lg:w-3/6 md:4/6 w-full dark:bg-box-dark-bg border bg-white flex flex-col gap-4 dark:shadow-sm shadow-md sm:p-10 p-5 rounded-lg">
 
-                    <AppDropdown
-                        title={"Project *"}
-                        value={projectName}
-                        options={projects.map(project => project.project_name)}
-                        error={error.projectId}
-                        onSelected={(value) => {
-                            const project = projects.find(project => project.project_name === value);
-                            setProjectId(project?.id)
-                            setProjectName(value)
-                        }}/>
-
                     <InputFieldWithSuggestion
                         title={"Inventory *"}
                         value={inventoryName}
                         className="min-w-full"
-                        suggestions={inventories.map(inventory => inventory.scit_control_number)}
+                        suggestions={inventories.map(inventory => inventory.inventory.scit_control_number)}
                         onChange={(value) => {
-                            const inventory = inventories.find(inventory => inventory.scit_control_number === value);
-                            setInventoryId(inventory?.id)
+                            const inventory = inventories.find(inventory => inventory.inventory.scit_control_number === value);
+                            setInventoryId(inventory?.inventory?.id)
                             setInventoryName(value)
                         }}
                         error={error.inventoryId}
@@ -265,20 +252,6 @@ const AddInventoryToTask = () => {
                         }}
                         error={error.requestDate}
                     />
-
-                    <InputFieldWithSuggestion
-                        title={"Task *"}
-                        value={taskName}
-                        className="min-w-full"
-                        suggestions={tasks.map(task => task.task_name)}
-                        onChange={(value) => {
-                            const task = tasks.find(task => task.task_name === value);
-                            setTaskId(task?.id)
-                            setTaskName(value)
-                        }}
-                        error={error.taskId}
-                        placeholder={"Select the task"}
-                        onValueChange={handleOnTaskQueryChange}/>
 
                     <InputWithError
                         title={"Total Quantity"}

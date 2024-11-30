@@ -2,7 +2,7 @@ import { gql } from "@apollo/client";
 
 export const GET_ALL_PROJECTS = gql `
 query MyQuery($offset: Int!, $limit: Int!) {
-  projects(offset: $offset, limit: $limit) {
+  projects(offset: $offset, limit: $limit, order_by: {created_at: desc, updated_at: desc}) {
     actual_end_date
     actual_start_date
     end_date
@@ -67,37 +67,33 @@ mutation MyMutation(
 }`
 
 export const UPDATE_PROJECT_BY_ID = gql `
-mutation MyMutation(
-  $id: Int!,  # Assuming the ID is an integer
-  $actual_end_date: timestamptz,
-  $actual_start_date: timestamptz,
-  $created_by: String,
-  $end_date: timestamptz,
-  $percentage: numeric,  # Assuming percentage is numeric
-  $project_description: String,
-  $project_name: String,
-  $start_date: timestamptz,
-  $status: String,
-  $updated_at: timestamptz
+mutation UpdateProject(
+  $id: Int!
+  $project_name: String!
+  $project_description: String!
+  $percentage: numeric!
+  $end_date: timestamptz!
+  $actual_start_date: timestamptz!
+  $actual_end_date: timestamptz!
+  $start_date: timestamptz!
+  $status: String!
 ) {
-  update_projects(
-    where: {id: {_eq: $id}},
-    _set: {
-      actual_end_date: $actual_end_date,
-      actual_start_date: $actual_start_date,
-      created_by: $created_by,
-      end_date: $end_date,
-      percentage: $percentage,
-      project_description: $project_description,
-      project_name: $project_name,
-      start_date: $start_date,
-      status: $status,
-      updated_at: $updated_at,
-    }
+  project_update_project(
+    id: $id
+    project_name: $project_name
+    project_description: $project_description
+    percentage: $percentage
+    end_date: $end_date
+    actual_start_date: $actual_start_date
+    actual_end_date: $actual_end_date
+    start_date: $start_date
+    status: $status
   ) {
-    affected_rows
+    message
+    success
   }
-}`
+}
+`
 
 export const DELETE_PROJECT_BY_ID = gql `
 mutation MyMutation($id: Int!) {
@@ -105,3 +101,58 @@ mutation MyMutation($id: Int!) {
     affected_rows
   }
 }`
+
+export const GET_ALL_TASKS_AND_INVENTORIES_BY_PROJECT_ID = gql`
+query MyQuery($id: Int!) {
+  projects(where: {id: {_eq: $id}}) {
+    id
+    project_name
+    actual_end_date
+    actual_start_date
+    created_at
+    created_by
+    end_date
+    percentage
+    project_description
+    status
+    start_date
+    updated_at
+    inventories: project_inventory(limit: 10, offset: 0, order_by: {created_at: desc}) {
+      id
+      status
+      total_qty
+      used_qty
+      project_id
+      updated_at
+      inventory {
+        inventory_category {
+          manufacturer
+          model_type
+          device
+        }
+        part_number
+      }
+    }
+    inventories_count: project_inventory_aggregate {
+      aggregate {
+        count
+      }
+    }
+    tasks: task(limit: 5, offset: 0, order_by: {updated_at: desc, created_at: desc}) {
+      id
+      task_name
+      fk_location_name
+      percentage
+      hardware
+      start_date_time
+      end_date_time
+    }
+    tasks_count: task_aggregate {
+      aggregate {
+        count
+      }
+    }
+  }
+}
+
+`
