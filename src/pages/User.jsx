@@ -5,7 +5,7 @@ import {getAllUsers} from "../graphql/query/getAllUsers";
 import {useStateContext} from "../contexts/ContextProvider";
 import {Link, useNavigate} from "react-router-dom";
 import {formatDate} from "../data/dummy";
-import {MdOutlineVpnKey, MdOutlineEditCalendar, MdModeEdit, MdDelete} from "react-icons/md";
+import {MdOutlineVpnKey, MdOutlineEditCalendar, MdModeEdit, MdDelete, MdChangeCircle} from "react-icons/md";
 
 import IconButton from "../components/IconButton";
 import Loading from "../components/Loading";
@@ -17,6 +17,7 @@ import AppButton from "../components/AppButton";
 import PageRoutes from "../utils/PageRoutes";
 import EmptyState from "../components/EmptyState";
 import {ActionType} from "../utils/Constants";
+import ChangePasswordDialog from "../components/ChangePasswordDialog";
 
 const User = () => {
     const {currentColor} = useStateContext();
@@ -29,6 +30,7 @@ const User = () => {
     const [error, setError] = useState(null)
     const [totalItems, setTotalItems] = useState(0)
     const [pageCount, setPageCount] = useState(0)
+    const [show, setShow] = useState(false);
 
     const [loadUsers] = useLazyQuery(getAllUsers, {
         onCompleted: data => {
@@ -63,7 +65,6 @@ const User = () => {
         "Phone",
         "Address",
         "Created Date",
-        "Actions"
     ];
 
     const actions = [
@@ -76,9 +77,9 @@ const User = () => {
                     onClick: (id) => handleOnEditClick(id),
                 },
                 {
-                    label: "Delete",
-                    icon: <MdDelete/>,
-                    onClick: (id) => handleOnDeleteClick(id),
+                    label: "Change Password",
+                    icon: <MdChangeCircle/>,
+                    onClick: (id) => navigate(`/users/change-password/${id}`),
                 }
             ]
         },
@@ -105,7 +106,7 @@ const User = () => {
     });
 
     const handleOnEditClick = (id) => {
-        navigate(`/users/change-password/${id}`)
+        navigate(`/users/edit-user/${id}`)
     }
 
     const handleOnDeleteClick = () => {
@@ -116,10 +117,8 @@ const User = () => {
 
     return (
         <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
-            <Header title={"Users"} category="Pages"/>
-            <div className="flex flex-row justify-end">
-                <AppButton title={"Add User"} route={PageRoutes.AddUser}/>
-            </div>
+            <Header title={"Users"} category="Pages" buttonTitle="Add User" showAddButton={true}
+                    onAddButtonClick={() => navigate(PageRoutes.AddUser)}/>
             <DataTable
                 headings={headings}
                 contents={contents}
@@ -138,6 +137,13 @@ const User = () => {
             <AlertSnackbar
                 message={error}
                 className="fixed bottom-4 right-4 z-50"  // Position bottom-right with a fixed position
+            />
+
+            <ChangePasswordDialog
+                isOpen={show}
+                onClose={() => setShow(false)}
+                onSubmit={() => {
+                }}
             />
 
         </div>

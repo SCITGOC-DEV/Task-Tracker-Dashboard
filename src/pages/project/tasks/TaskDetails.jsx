@@ -23,6 +23,7 @@ import {MdMore} from "react-icons/md";
 import {IoPersonRemoveSharp} from "react-icons/io5";
 import AssignTaskToUserDialog from "../../../components/AssignTaskToUserDialog";
 import PageRoutes from "../../../utils/PageRoutes";
+import useAuth from "../../../hooks/useAuth";
 
 const headings = [
     "Task Name",
@@ -79,6 +80,7 @@ const TaskDetails = () => {
     const [deleteTaskOpen, setDeleteTaskOpen] = useState(false)
     const [deAssignOpen, setDeAssignOpen] = useState(false)
     const [assignTaskOpen, setAssignTaskOpen] = useState(false)
+    const { role } = useAuth()
 
     const taskItemPerPage = 5
 
@@ -119,6 +121,7 @@ const TaskDetails = () => {
     }
 
     const setAssignedUsersData = (data) => {
+        setAssignedUsers([])
         const result = data.map((item) => [
             item.id || "N/A",
             item.user.username || "N/A",
@@ -126,12 +129,14 @@ const TaskDetails = () => {
             item.user.phone || "N/A",
             item.user.address || "N/A"
         ])
+        console.log('assignedUsers: ', result.length);
         setAssignedUsers(result)
     }
 
     const setTaskInventoriesData = (data) => {
+        console.log(data.inventory)
         const result = data.map((inventory) => [
-            inventory.inventory.id || "N/A",
+            inventory.id || "N/A",
             inventory.inventory.admin_name || "N/A",
             inventory.inventory.inventory_category.device || "N/A",
             inventory.inventory.inventory_category.manufacturer || "N/A",
@@ -147,9 +152,19 @@ const TaskDetails = () => {
             type: ActionType.Icon,
             actions: [
                 {
-                    label: "Detail",
+                    label: "Deassign",
                     color: "bg-red-500",
                     hoverColor: "bg-red-600",
+                    icon: <IoPersonRemoveSharp/>,
+                    onClick: (assignTaskId) => {
+                        setAssignTaskId(assignTaskId)
+                        setDeAssignOpen(true)
+                    },
+                },
+                {
+                    label: "Edit",
+                    color: "bg-blue-500",
+                    hoverColor: "bg-blue-600",
                     icon: <IoPersonRemoveSharp/>,
                     onClick: (assignTaskId) => {
                         setAssignTaskId(assignTaskId)
@@ -167,7 +182,7 @@ const TaskDetails = () => {
                 {
                     label: "Detail",
                     icon: <MdMore/>,
-                    onClick: (id) => navigate(`${PageRoutes.InventoryDetails}/${id}`),
+                    onClick: (id) => navigate(`/projects/tasks/task-inventory/details/${id}`),
                 }
             ]
         }
@@ -199,6 +214,7 @@ const TaskDetails = () => {
     const [loadAssignedUsers] = useLazyQuery(GET_ASSIGNED_USERS_BY_TASK_ID, {
         fetchPolicy: 'network-only',
         onCompleted: data => {
+            console.log('active: ', data.tasks[0].users.length)
             setAssignedUsersData(data.tasks[0].users)
             setUsersPageCount(Math.ceil(data.tasks[0].users_count.aggregate.count/ taskItemPerPage))
         },
@@ -219,6 +235,7 @@ const TaskDetails = () => {
         refetchQueries: [{query: GET_ASSIGNED_USERS_BY_TASK_ID}],
         onCompleted: data => {
             const response = data.task_remove_assigned_task
+            console.log(response)
             if (response.success) {
                 toast.success("Successfully deassigned the task!")
                 setDeAssignOpen(false)
@@ -234,7 +251,6 @@ const TaskDetails = () => {
             } else toast.error(response.message)
         },
         onError: error => {
-            console.log(error)
             toast.error(error.message)
         }
     })
@@ -286,7 +302,6 @@ const TaskDetails = () => {
     }, [location.key]);
 
     const handleDeAssignTask = () => {
-        console.log(taskId, assignTaskId)
         deassignTaskById({variables: {task_id: taskId, assigned_task_id: assignTaskId}})
     }
 
@@ -333,7 +348,7 @@ const TaskDetails = () => {
                 <Header
                     title={`Assigned Users`}
                     category={`All assigned users related to the ${taskName}`}
-                    showAddButton={true}  // Ensure this is true when you want the button to show
+                    showAddButton={role === "projectadmin"}  // Ensure this is true when you want the button to show
                     buttonTitle={"Assign Task To Users"}
                     onAddButtonClick={() => setAssignTaskOpen(true)}
                 />
@@ -355,7 +370,7 @@ const TaskDetails = () => {
                 <Header
                     title={`Task Inventories`}
                     category={`All task inventories related to the ${taskName}`}
-                    showAddButton={true}  // Ensure this is true when you want the button to show
+                    showAddButton={role === "projectadmin"}  // Ensure this is true when you want the button to show
                     buttonTitle={"Add Task Inventory"}
                     onAddButtonClick={() => navigate(`${PageRoutes.AddTaskInventory}/${id}/${taskId}`)}
                 />

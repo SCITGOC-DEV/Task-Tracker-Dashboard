@@ -223,7 +223,7 @@ const EditTask = () => {
                 title="Quantity *"
                 placeholder="Enter Quantity"
                 value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
+                onChange={(e) => setQuantity(e.target.value.replace(/[^0-9]/g, ""))}
                 error={quantityError}
             />
             <InputWithError

@@ -12,7 +12,11 @@ import {AppCheckBox} from "../../components/AppCheckBox";
 import {useLazyQuery, useMutation} from "@apollo/client";
 import {GET_INVENTORY_CATEGORY_BY_ID, getInventoryCategoriesByName} from "../../graphql/query/inventoryCategoryQueries";
 import useAuth from "../../hooks/useAuth";
-import {ADD_INVENTORY, GET_INVENTORY_BY_ID, UPDATE_INVENTORY_BY_ID} from "../../graphql/query/inventoryQueries";
+import {
+    ADD_INVENTORY,
+    GET_INVENTORY_BY_ID,
+    UPDATE_INVENTORY,
+} from "../../graphql/query/inventoryQueries";
 import {toast} from "react-toastify";
 import {formatDate} from "date-fns";
 import {convertTimestampToDate} from "../../data/dummy";
@@ -22,7 +26,7 @@ const UpdateInventory = () => {
     const {currentColor} = useStateContext();
     const navigate = useNavigate();
     const {id, inventoryId} = useParams()
-    const [loading,setLoading] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     const {role} = useAuth()
 
@@ -73,13 +77,13 @@ const UpdateInventory = () => {
 
     const [getInventoryCategoryById] = useLazyQuery(GET_INVENTORY_CATEGORY_BY_ID, {
         onCompleted: data => {
-            setInventoryCategory(data.inventory_categories[0].device)
+            const response = data.inventory_categories[0]
+            setInventoryCategory(`${response.manufacturer} - ${response.model_type} - ${response.device}`)
         }
     })
 
     const [getInventoryById] = useLazyQuery(GET_INVENTORY_BY_ID, {
         onCompleted: data => {
-            console.log('data: ',data)
             setValues(data.inventories[0])
         },
         onError: error => {
@@ -123,19 +127,23 @@ const UpdateInventory = () => {
         setType(inventory.type || '');
         setAdminName(inventory.admin_name || '');
         setInventoryCategoryId(inventory.inventory_category_id || null);
+        setPartNumber(inventory.part_number || null);
 
         getInventoryCategoryById({
             variables: {id: inventory.inventory_category_id}
         })
     }
 
-    const [updateInventoryById] = useMutation(UPDATE_INVENTORY_BY_ID, {
+    const [updateInventoryById] = useMutation(UPDATE_INVENTORY, {
         onCompleted: data => {
             setTimeout(() => {
                 setLoading(false)
-                toast.success("Inventory is successfully updated.")
-                navigate(PageRoutes.InventoryRecords)
-            },500)
+                const response = data.inventory_update_inventory
+                console.log(response)
+                if (response.success) {toast.success("Inventory is successfully updated.")}
+                else toast.error(response.message)
+                navigate(-1)
+            }, 500)
         },
         onError: error => {
             setLoading(false)
@@ -182,9 +190,9 @@ const UpdateInventory = () => {
     const validateForm = () => {
         const newErrors = {};
 
-        if (unitsOnRequest < 0) newErrors.unitsOnRequest = 'Units on request cannot be negative';
+        //if (unitsOnRequest < 0) newErrors.unitsOnRequest = 'Units on request cannot be negative';
         if (!createdAt) newErrors.createdAt = 'Creation date is required';
-        if (!scitControlNumber) newErrors.scitControlNumber = 'SCIT Control Number is required';
+        if (!partNumber) newErrors.partNumber = 'Part Number is required';
         if (!supplier) newErrors.supplier = 'Supplier is required';
         if (!country) newErrors.country = 'Country is required';
         if (!address) newErrors.address = 'Address is required';
@@ -216,43 +224,42 @@ const UpdateInventory = () => {
     }
 
     const handleSubmit = () => {
-        const isValid = validateForm() === false
-        console.log(isValid)
-        if(validateForm() === true) {
+        if (true) {
             setLoading(true)
-            console.log(convertTimestampToDate(datePurchaseReceived))
             const variables = {
                 id: id,
-                address:address,
-                admin_name: role,
-                country:country,
+                is_return: isReturn,
+                quantity: quantity,
+                serial_number_end: serialNumberEnd,
+                unit_price: unitPrice,
+                address: address,
                 contact_number: contactNumber,
+                country: country,
                 date_purchase_received: convertTimestampToDate(datePurchaseReceived),
                 date_release: convertTimestampToDate(dateRelease),
                 date_return: convertTimestampToDate(dateReturn),
                 delivered_to_client: deliveredToClient,
-                email_address: emailAddress,
                 delivery_receipt_no: deliveryReceiptNo,
+                email_address: emailAddress,
                 inventory_category_id: inventoryCategoryId,
-                is_return: isReturn,
                 location_stock: locationStock,
-                quantity: quantity,
-                scit_control_number: scitControlNumber,
-                serial_number_end: serialNumberEnd,
                 serial_number_start: serialNumberStart,
                 stock_office: stockOffice,
                 supplier: supplier,
                 total_amount: totalAmount,
                 total_stock_amount: totalStockAmount,
                 total_unit_release: totalUnitRelease,
-                unit_price: unitPrice,
-                type: type,
                 unit_return: unitReturn,
-                units_on_request: unitsOnRequest,
-                updated_at: new Date().toISOString(),
+                type: type,
                 website: website,
+                partNumber: partNumber
+
+                /*admin_name: role,
+                scit_control_number: scitControlNumber,
+                units_on_request: unitsOnRequest,
+                updated_at: new Date().toISOString(),*/
             };
-            console.log(`add: ${variables}`)
+            console.log(variables)
             updateInventoryById({
                 variables: variables
             })
@@ -260,269 +267,262 @@ const UpdateInventory = () => {
     }
 
     return (
-        <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
+        <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white items-center justify-center">
             <BackButton onBackClick={() => navigate(-1)}/>
             <Header title={"Update inventory"} category={"Pages"} showAddButton={false}/>
-            <div className="w-full flex flex-col justify-center items-center">
-                <div
-                    className="sm:w-5/6 lg:w-3/6 md:4/6 w-full dark:bg-box-dark-bg border bg-white flex flex-col gap-4 dark:shadow-sm shadow-md sm:p-10 p-5 rounded-lg">
+            <div className="w-full flex items-center justify-center">
+                <div className="w-4/5 bg-white rounded-lg dark:divide-gray-600 divide-gray-200 border items-center justify-center">
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] p-4 gap-6">
+                        {/* Left Column */}
+                        <div className="p-4 flex flex-col gap-4">
+                            <InputWithError
+                                className="min-w-full"
+                                title="Part Number"
+                                placeholder="Enter Part Number"
+                                value={partNumber}
+                                onChange={(value) => setPartNumber(value.target.value)}
+                                error={errors.partNumber}
+                            />
 
-                    {/* Field for Units on Request */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Units on Request *"
-                        placeholder="Enter Units on Request"
-                        value={unitsOnRequest}
-                        onChange={(value) => setUnitsOnRequest(value.target.value)}
-                        error={errors.unitsOnRequest}
-                    />
+                            {/* Field for Supplier */}
+                            <InputWithError
+                                className="min-w-full"
+                                title="Supplier"
+                                placeholder="Enter Supplier"
+                                value={supplier}
+                                onChange={(value) => setSupplier(value.target.value)}
+                                error={errors.supplier}
+                            />
 
-                    {/* Field for SCIT Control Number */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="SCIT Control Number"
-                        placeholder="Enter SCIT Control Number"
-                        value={scitControlNumber}
-                        onChange={(value) => setScitControlNumber(value.target.value)}
-                        error={errors.scitControlNumber}
-                    />
+                            {/* Field for Country */}
+                            <InputWithError
+                                className="min-w-full"
+                                title="Country"
+                                placeholder="Enter Country"
+                                value={country}
+                                onChange={(value) => setCountry(value.target.value)}
+                                error={errors.country}
+                            />
 
-                    {/* Field for Supplier */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Supplier"
-                        placeholder="Enter Supplier"
-                        value={supplier}
-                        onChange={(value) => setSupplier(value.target.value)}
-                        error={errors.supplier}
-                    />
+                            {/* Field for Address */}
+                            <InputWithError
+                                className="min-w-full"
+                                title="Address"
+                                placeholder="Enter Address"
+                                value={address}
+                                onChange={(value) => setAddress(value.target.value)}
+                                error={errors.address}
+                            />
 
-                    {/* Field for Country */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Country"
-                        placeholder="Enter Country"
-                        value={country}
-                        onChange={(value) => setCountry(value.target.value)}
-                        error={errors.country}
-                    />
+                            {/* Field for Contact Number */}
+                            <InputWithError
+                                className="min-w-full"
+                                title="Contact Number"
+                                placeholder="Enter Contact Number"
+                                value={contactNumber}
+                                onChange={(value) => setContactNumber(value.target.value)}
+                                error={errors.contactNumber}
+                            />
 
-                    {/* Field for Address */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Address"
-                        placeholder="Enter Address"
-                        value={address}
-                        onChange={(value) => setAddress(value.target.value)}
-                        error={errors.address}
-                    />
+                            {/* Field for Email Address */}
+                            <InputWithError
+                                className="min-w-full"
+                                title="Email Address"
+                                placeholder="Enter Email Address"
+                                value={emailAddress}
+                                onChange={(value) => setEmailAddress(value.target.value)}
+                                error={errors.emailAddress}
+                            />
 
-                    {/* Field for Contact Number */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Contact Number"
-                        placeholder="Enter Contact Number"
-                        value={contactNumber}
-                        onChange={(value) => setContactNumber(value.target.value)}
-                        error={errors.contactNumber}
-                    />
+                            {/* Field for Website */}
+                            <InputWithError
+                                className="min-w-full"
+                                title="Website"
+                                placeholder="Enter Website"
+                                value={website}
+                                onChange={(value) => setWebsite(value.target.value)}
+                                error={errors.website}
+                            />
 
-                    {/* Field for Email Address */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Email Address"
-                        placeholder="Enter Email Address"
-                        value={emailAddress}
-                        onChange={(value) => setEmailAddress(value.target.value)}
-                        error={errors.emailAddress}
-                    />
+                            {/* Field for Unit Price */}
+                            <InputWithError
+                                className="min-w-full"
+                                title="Unit Price *"
+                                placeholder="Enter Unit Price"
+                                value={unitPrice}
+                                onChange={(value) => setUnitPrice(value.target.value)}
+                                error={errors.unitPrice}
+                            />
 
-                    {/* Field for Website */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Website"
-                        placeholder="Enter Website"
-                        value={website}
-                        onChange={(value) => setWebsite(value.target.value)}
-                        error={errors.website}
-                    />
+                            {/* Field for Quantity */}
+                            <InputWithError
+                                className="min-w-full"
+                                title="Quantity *"
+                                placeholder="Enter Quantity"
+                                value={quantity}
+                                onChange={(value) => setQuantity(value.target.value)}
+                                error={errors.quantity}
+                            />
 
-                    {/* Field for Unit Price */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Unit Price *"
-                        placeholder="Enter Unit Price"
-                        value={unitPrice}
-                        onChange={(value) => setUnitPrice(value.target.value)}
-                        error={errors.unitPrice}
-                    />
+                            {/* Field for Total Amount */}
+                            <InputWithError
+                                className="min-w-full"
+                                title="Total Amount *"
+                                placeholder="Enter Total Amount"
+                                value={totalAmount}
+                                onChange={(value) => setTotalAmount(value.target.value)}
+                                error={errors.totalAmount}
+                            />
 
-                    {/* Field for Quantity */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Quantity *"
-                        placeholder="Enter Quantity"
-                        value={quantity}
-                        onChange={(value) => setQuantity(value.target.value)}
-                        error={errors.quantity}
-                    />
+                            <InputButton
+                                className="min-w-full"
+                                title="Date Purchase Received Date"
+                                buttonTitle={datePurchaseReceived || 'Select Purchase Received Date'}
+                                onClick={(date) => setDatePurchaseReceived(date)}
+                                error={errors.datePurchaseReceived}
+                            />
 
-                    {/* Field for Total Amount */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Total Amount *"
-                        placeholder="Enter Total Amount"
-                        value={totalAmount}
-                        onChange={(value) => setTotalAmount(value.target.value)}
-                        error={errors.totalAmount}
-                    />
+                            <InputButton
+                                className="min-w-full"
+                                title="Release Date"
+                                buttonTitle={datePurchaseReceived || 'Select Release Date'}
+                                onClick={(date) => setDateRelease(date)}
+                                error={errors.dateRelease}
+                            />
+                        </div>
 
-                    <InputButton
-                        className="min-w-full"
-                        title="Date Purchase Received Date"
-                        buttonTitle={datePurchaseReceived || 'Select Purchase Received Date'}
-                        onClick={(date) => setDatePurchaseReceived(date)}
-                        error={errors.datePurchaseReceived}
-                    />
+                        {/* Vertical Divider */}
+                        <div className="hidden md:block border-l border-gray-200 h-full"/>
 
-                    <InputButton
-                        className="min-w-full"
-                        title="Release Date"
-                        buttonTitle={datePurchaseReceived || 'Select Release Date'}
-                        onClick={(date) => setDateRelease(date)}
-                        error={errors.dateRelease}
-                    />
+                        {/* Right Column */}
+                        <div className="p-4 flex flex-col gap-4">
+                            <InputWithError
+                                className="min-w-full"
+                                title="Total Unit Release *"
+                                placeholder="Enter Total Unit Release"
+                                value={totalUnitRelease}
+                                onChange={(value) => setTotalUnitRelease(value.target.value)}
+                                error={errors.totalUnitRelease}
+                            />
 
-                    <InputWithError
-                        className="min-w-full"
-                        title="Total Unit Release *"
-                        placeholder="Enter Total Unit Release"
-                        value={totalUnitRelease}
-                        onChange={(value) => setTotalUnitRelease(value.target.value)}
-                        error={errors.totalUnitRelease}
-                    />
+                            <InputWithError
+                                className="min-w-full"
+                                title="Delivered To Client"
+                                placeholder="Enter Delivered to client"
+                                value={deliveredToClient}
+                                onChange={(value) => setDeliveredToClient(value.target.value)}
+                                error={errors.deliveredToClient}
+                            />
 
-                    <InputWithError
-                        className="min-w-full"
-                        title="Delivered To Client"
-                        placeholder="Enter Delivered to client"
-                        value={deliveredToClient}
-                        onChange={(value) => setDeliveredToClient(value.target.value)}
-                        error={errors.deliveredToClient}
-                    />
+                            <InputWithError
+                                className="min-w-full"
+                                title="Delivery Receipt No"
+                                placeholder="Enter Delivery Receipt No"
+                                value={deliveryReceiptNo}
+                                onChange={(value) => setDeliveryReceiptNo(value.target.value)}
+                                error={errors.deliveryReceiptNo}
+                            />
 
-                    <InputWithError
-                        className="min-w-full"
-                        title="Delivery Receipt No"
-                        placeholder="Enter Delivery Receipt No"
-                        value={deliveryReceiptNo}
-                        onChange={(value) => setDeliveryReceiptNo(value.target.value)}
-                        error={errors.deliveryReceiptNo}
-                    />
+                            <InputWithError
+                                className="min-w-full"
+                                title="Return Units"
+                                placeholder="Enter Return Units"
+                                value={unitReturn}
+                                onChange={(value) => setUnitReturn(value.target.value)}
+                                error={errors.unitReturn}
+                            />
 
-                    <InputWithError
-                        className="min-w-full"
-                        title="Return Units"
-                        placeholder="Enter Return Units"
-                        value={unitReturn}
-                        onChange={(value) => setUnitReturn(value.target.value)}
-                        error={errors.unitReturn}
-                    />
+                            <InputWithError
+                                className="min-w-full"
+                                title="Location Stock"
+                                placeholder="Enter location"
+                                value={locationStock}
+                                onChange={(value) => setLocationStock(value.target.value)}
+                                error={errors.locationStock}
+                            />
 
-                    <InputWithError
-                        className="min-w-full"
-                        title="Location Stock"
-                        placeholder="Enter location"
-                        value={locationStock}
-                        onChange={(value) => setLocationStock(value.target.value)}
-                        error={errors.locationStock}
-                    />
+                            <InputButton
+                                className="min-w-full"
+                                title="Return Date"
+                                buttonTitle={dateReturn || 'Select Return Date'}
+                                onClick={(date) => setDateReturn(date)}
+                                error={errors.dateReturn}
+                            />
 
-                    <InputButton
-                        className="min-w-full"
-                        title="Return Date"
-                        buttonTitle={dateReturn || 'Select Return Date'}
-                        onClick={(date) => setDateReturn(date)}
-                        error={errors.dateReturn}
-                    />
+                            <InputWithError
+                                className="min-w-full"
+                                title="Stock Office *"
+                                placeholder="Enter stock office"
+                                value={stockOffice}
+                                onChange={(value) => setStockOffice(value.target.value)}
+                                error={errors.stockOffice}
+                            />
 
-                    <InputWithError
-                        className="min-w-full"
-                        title="Stock Office *"
-                        placeholder="Enter stock office"
-                        value={stockOffice}
-                        onChange={(value) => setStockOffice(value.target.value)}
-                        error={errors.stockOffice}
-                    />
+                            <InputWithError
+                                className="min-w-full"
+                                title="Total Stock Amount"
+                                placeholder="Enter total stock amount"
+                                value={totalStockAmount}
+                                onChange={(value) => setTotalStockAmount(value.target.value)}
+                                error={errors.totalStockAmount}
+                            />
 
-                    <InputWithError
-                        className="min-w-full"
-                        title="Total Stock Amount"
-                        placeholder="Enter total stock amount"
-                        value={totalStockAmount}
-                        onChange={(value) => setTotalStockAmount(value.target.value)}
-                        error={errors.totalStockAmount}
-                    />
+                            <InputWithError
+                                className="min-w-full"
+                                title="Start Serial Number"
+                                placeholder="Enter start serial number"
+                                value={serialNumberStart}
+                                onChange={(value) => setSerialNumberStart(value.target.value)}
+                                error={errors.serialNumberStart}
+                            />
 
-                    <InputWithError
-                        className="min-w-full"
-                        title="Start Serial Number"
-                        placeholder="Enter start serial number"
-                        value={serialNumberStart}
-                        onChange={(value) => setSerialNumberStart(value.target.value)}
-                        error={errors.serialNumberStart}
-                    />
+                            <InputWithError
+                                className="min-w-full"
+                                title="Type"
+                                placeholder="Enter type"
+                                value={type}
+                                onChange={(value) => setType(value.target.value)}
+                                error={errors.type}
+                            />
 
-                    <InputWithError
-                        className="min-w-full"
-                        title="Type"
-                        placeholder="Enter type"
-                        value={type}
-                        onChange={(value) => setType(value.target.value)}
-                        error={errors.type}
-                    />
+                            <InputWithError
+                                className="min-w-full"
+                                title="End Serial Number"
+                                placeholder="Enter end serial number"
+                                value={serialNumberEnd}
+                                onChange={(value) => setSerialNumberEnd(value.target.value)}
+                                error={errors.serialNumberEnd}
+                            />
 
-                    <InputWithError
-                        className="min-w-full"
-                        title="End Serial Number"
-                        placeholder="Enter end serial number"
-                        value={serialNumberEnd}
-                        onChange={(value) => setSerialNumberEnd(value.target.value)}
-                        error={errors.serialNumberEnd}
-                    />
+                            <InputFieldWithSuggestion
+                                className="min-w-full"
+                                title="Manufacturer - Model Type - Device"
+                                placeholder="Select or Enter Inventory category name"
+                                value={inventoryCategory}
+                                suggestions={inventoryCategories.map(inventory => `${inventory.manufacturer} - ${inventory.model_type} - ${inventory.device}`)}
+                                onChange={(value) => {
+                                    const inventoryItem = inventoryCategories?.find(
+                                        item => `${item.manufacturer} - ${item.model_type} - ${item.device}`.toLowerCase().trim() == value.toLowerCase().trim()
+                                    );
+                                    setInventoryCategoryId(inventoryItem?.id)
+                                }}
+                                onValueChange={onInventoryCategoryChange}
+                                error={errors.inventoryCategoryId}
+                            />
 
-                    <InputFieldWithSuggestion
-                        className="min-w-full"
-                        title="Inventory Category Name"
-                        placeholder="Select or Enter Inventory category name"
-                        value={inventoryCategory}
-                        onChange={(value) => {
-                            const inventoryCategory = inventoryCategories.find(category => category.device == value)
-                            console.log(inventoryCategory)
-                            setInventoryCategoryId(inventoryCategory?.id)
-                            setInventoryCategory(value)
-                        }}
-                        suggestions={inventoryCategories.map(category => category.device)}
-                        onValueChange={onInventoryCategoryChange}
-                        error={errors.inventoryCategoryId}
-                    />
+                            <AppCheckBox
+                                value={isReturn}
+                                title={"Is Return"}
+                                onChange={() => setIsReturn(!isReturn)}
+                            />
+                            <button
+                                className="bg-blue-500 mt-4 min-w-full text-white py-2 px-4 rounded"
+                                onClick={handleSubmit}>
+                                {loading ? (<ActivityIndicator size="small" color="#ffffff"/>) : ('Update')}
+                            </button>
+                        </div>
+                    </div>
 
-                    <AppCheckBox
-                        value={isReturn}
-                        title={"Is Return"}
-                        onChange={() => setIsReturn(!isReturn)}
-                    />
-
-                    <button
-                        className="bg-blue-500 mt-4 min-w-full text-white py-2 px-4 rounded"
-                        onClick={handleSubmit}
-                    >
-                        {loading ? (
-                            <ActivityIndicator size="small" color="#ffffff"/>
-                        ) : (
-                            'Update'
-                        )}
-                    </button>
                 </div>
             </div>
         </div>

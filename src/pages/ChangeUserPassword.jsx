@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import { Button, Header, PasswordTextField, TextField } from "../components";
 import { useStateContext } from "../contexts/ContextProvider";
 import { useMutation, useQuery } from "@apollo/client";
@@ -12,13 +12,27 @@ const ChangeUserPassword = () => {
   const { currentColor } = useStateContext();
   const { id } = useParams();
   const navigate = useNavigate();
+  const [loading,setLoading] = useState(false)
   const { data, loading: getLoading } = useQuery(getUserByID, {
     variables: {
       id,
     },
   });
   const user = data?.users_by_pk ? data?.users_by_pk : null;
-  const [changePassword, { loading }] = useMutation(changeUserPassword);
+  const [changePassword] = useMutation(changeUserPassword, {
+    onCompleted: data1 => {
+      setLoading(false)
+      const response = data1.response
+      if (response.success) {
+        toast.success("Changed password successfully!")
+        navigate(-1)
+      } else toast.error(response.message)
+    },
+    onError: error1 => {
+      console.log(error1.message)
+      toast.error(error1.message)
+    }
+  });
   const {
     register,
     handleSubmit,
@@ -38,32 +52,17 @@ const ChangeUserPassword = () => {
   }, [user, setValue]);
 
   const onSubmit = ({ username, old_password, new_password }) => {
-    console.log(username, old_password, new_password);
+    setLoading(true)
     changePassword({
       variables: {
-        username,
-        oldPassword: old_password,
+        userName: username,
         newPassword: new_password,
-      },
-      onCompleted: ({ userChangePassword }) => {
-        console.log(userChangePassword);
-
-        if (userChangePassword.error === 0) {
-          navigate("/users");
-          toast.success(userChangePassword.message);
-        } else {
-          toast.error(userChangePassword.message);
-          return;
-        }
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
+      }
     });
   };
   return (
     <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-      <Header title={"User Change Password"} category="Pages" />
+      <Header title={"User Change Password"} category="Pages" showAddButton={false} />
       <Link
         to={"/users"}
         className="inline-block p-3 rounded-lg mb-4 text-white hover:opacity-95"
@@ -85,27 +84,6 @@ const ChangeUserPassword = () => {
               placeholder="Username"
               fullWidth
               disabled={!getLoading}
-            />
-          </div>
-          <div className="mb-4">
-            <h3 className="text-lg mb-1">Old Password</h3>
-            <PasswordTextField
-              {...register("old_password", {
-                required: "old_password is required field",
-              })}
-              disabled={loading}
-              error={
-                touchedFields.old_password &&
-                errors.old_password &&
-                Boolean(errors.old_password)
-              }
-              helperText={
-                touchedFields.old_password &&
-                errors.old_password &&
-                errors.old_password.message
-              }
-              fullWidth
-              placeholder="Old Password"
             />
           </div>
           <div className="mb-8">

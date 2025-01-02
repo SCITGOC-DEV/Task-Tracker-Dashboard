@@ -76,7 +76,7 @@ const Login = () => {
         }, 500);
       },  
       onError: (error) => {
-        console.log(error.message);
+        console.log(error.message.toString());
       },
     });
   };

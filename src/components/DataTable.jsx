@@ -21,74 +21,86 @@ const DataTable = ({
     if (contents.length === 0) return <EmptyState title={errorProps.name} description={errorProps.description}
                                                   className={"text-center"}/>
 
-    return (<div className="flex flex-col max-w-full dark:bg-box-dark-bg bg-white">
+    return (
+        <div className="flex flex-col max-w-full dark:bg-box-dark-bg bg-white">
             <div className="overflow-x-auto"> {/* Enable horizontal scrolling for the table */}
-                <div className="max-w-full divide-y transition-all ease-in dark:divide-gray-600 divide-gray-200 border rounded-lg">
+                <div
+                    className="max-w-full divide-y transition-all ease-in dark:divide-gray-600 divide-gray-200 border rounded-lg">
                     <table className="min-w-full max-w-full rounded-lg"> {/* Set max width to prevent overflow */}
                         <thead className="border-b rounded-lg bg-gray-50 dark:bg-gray-800">
                         <tr>
-                            {headings.map((item, index) => (<th
-                                key={index}
-                                scope="col"
-                                className="px-6 py-4 text-xs font-bold text-left text-light-gray uppercase"
-                            >
-                                {item}
-                            </th>))}
-                            <th>Actions</th>
+                            {headings.map((item, index) => (
+                                <th
+                                    key={index}
+                                    scope="col"
+                                    className="px-2 py-2 text-xs font-bold text-left text-light-gray uppercase sm:px-4 sm:py-4"
+                                >
+                                    {item}
+                                </th>
+                            ))}
+                            <th className="px-2 py-2 text-xs font-bold text-left text-light-gray uppercase sm:px-4 sm:py-4">Actions</th>
                         </tr>
                         </thead>
 
                         <tbody className="divide-y dark:divide-gray-600 divide-gray-200">
-                        {contents.map((row, rowIndex) => (<tr key={rowIndex} className="align-middle">
-                            {row.map((cell, cellIndex) => (
+                        {contents.map((row, rowIndex) => (
+                            <tr key={rowIndex} className="align-middle">
+                                {row.map((cell, cellIndex) => (
                                     <td
                                         key={cellIndex}
-                                        className="px-6 py-2 text-sm font-medium text-gray-800 dark:text-white whitespace-nowrap"
+                                        className="px-2 py-2 text-sm font-medium truncate max-w-xs text-gray-800 dark:text-white whitespace-nowrap sm:px-4 sm:py-2"
                                     >
-                                        {cellIndex === 0 ? rowIndex+1 : cell}
+                                        {cellIndex === 0 ? rowIndex + 1 : cell}
                                     </td>
-                                )
-                            )
-                            }
-                            <td className="flex items-center space-x-2 py-2 justify-center align-middle">
-                                {actions.map((actionGroup, groupIndex) => (<div key={groupIndex}>
+                                ))}
+                                <td className="flex items-center space-x-2 py-2 justify-center align-middle">
+                                    {actions.map((actionGroup, groupIndex) => (
+                                        <div key={groupIndex}>
                                             {/* First, render all Icon type actions */}
-                                            {actionGroup.type === ActionType.Icon && (<div className="flex space-x-2">
-                                                {actionGroup.actions.map((action, actionIndex) => (
-                                                    <AppIconButton
-                                                        icon={action.icon}
-                                                        title={action.label}
-                                                        color={`bg-blue-500 ${action?.color} ${action?.hoverColor}`}
-                                                        hoverColor="bg-blue-600"
-                                                        onClick={() => action.onClick(row[0])}
-                                                    />
-                                                ))}
-                                            </div>)}
+                                            {actionGroup.type === ActionType.Icon && (
+                                                <div className="flex space-x-2">
+                                                    {actionGroup.actions.map((action, actionIndex) => (
+                                                        <AppIconButton
+                                                            key={actionIndex} // Add key for each button
+                                                            icon={action.icon}
+                                                            title={action.label}
+                                                            color={`bg-blue-500 ${action?.color} ${action?.hoverColor}`}
+                                                            hoverColor="bg-blue-600"
+                                                            onClick={() => action.onClick(row[0])}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
-                                    )
-                                )
-                                }
+                                    ))}
 
-                                {/* Then render the dropdown after all the Icon type actions */}
-                                {actions.map((actionGroup, groupIndex) => (<div key={groupIndex}>
-                                    {actionGroup.type === ActionType.Dropdown && (<DropDown
-                                        options={actionGroup.actions}
-                                        id={row[0]}
-                                    />)}
-                                </div>))}
-                            </td>
-                        </tr>))}
+                                    {/* Then render the dropdown after all the Icon type actions */}
+                                    {actions.map((actionGroup, groupIndex) => (
+                                        <div key={groupIndex}>
+                                            {actionGroup.type === ActionType.Dropdown && (
+                                                <DropDown
+                                                    options={actionGroup.actions}
+                                                    id={row[0]}
+                                                />
+                                            )}
+                                        </div>
+                                    ))}
+                                </td>
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
 
-                    {0 < totalPages && (<Pagination
-                        totalPages={totalPages}
-                        currentPage={currentPage}
-                        handlePageClick={onPageClick}/>)}
+                    {0 < totalPages && (
+                        <Pagination
+                            totalPages={totalPages}
+                            currentPage={currentPage}
+                            handlePageClick={onPageClick}
+                        />
+                    )}
                 </div>
             </div>
         </div>
-
     );
 };
 

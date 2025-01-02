@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import { Header, PaginationButtons } from "../components";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {Link, useLocation, useNavigate, useParams} from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import { getAllLocations } from "../graphql/query/getAllLocatioins";
 import {useLazyQuery, useMutation, useQuery} from "@apollo/client";
@@ -35,6 +35,7 @@ const ImplementedSites = () => {
   const [totalItems, setTotalItems] = useState(0)
   const [pageCount, setPageCount] = useState(0)
   const [loading, setLoading] = React.useState(true);
+  const location = useLocation()
 
   const [loadLocations] = useLazyQuery(getAllLocations, {
     fetchPolicy: "network-only",
@@ -55,13 +56,26 @@ const ImplementedSites = () => {
     loadLocations({
       variables: { offset, limit: itemsPerPage }
     })
-  }, []);
+  }, [location.key]);
 
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
   };
 
-  const [deleteLocation] = useMutation(DELETE_LOCATION);
+  const [deleteLocation] = useMutation(DELETE_LOCATION, {
+    refetchQueries: [getAllLocations],
+    fetchPolicy: "network-only",
+    onCompleted: data => {
+      toast.success("Location has been deleted successfully.")
+      setCurrentPage(0)
+      loadLocations({
+        variables: { offset, limit: itemsPerPage }
+      })
+    },
+    onError: error => {
+      toast.error(error.message)
+    }
+  });
 
   const handleDelete = (id) => {
     const confirm = window.confirm(
@@ -128,10 +142,7 @@ const ImplementedSites = () => {
 
   return (
     <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
-      <Header title={"Implemented Sites"} category="Pages" />
-      <div className="flex flex-row justify-end">
-        <AppButton title="Add Location" route={PageRoutes.AddLocation}/>
-      </div>
+      <Header title={"Implemented Sites"} category="Pages" buttonTitle="Add Location" onAddButtonClick={() => navigate(PageRoutes.AddLocation)} />
       <DataTable
           headings={headings}
           contents={contents}

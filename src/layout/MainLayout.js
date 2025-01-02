@@ -4,10 +4,11 @@ import { FiSettings } from "react-icons/fi";
 import { Sidebar, Navbar, ThemeSettings } from "../components";
 import { useStateContext } from "../contexts/ContextProvider";
 import useAuth from "../hooks/useAuth";
-import { links, projectAdminOptions } from "../data/dummy";
+import { adminOptions, projectAdminOptions } from "../data/dummy";
 
 const MainLayout = () => {
-  const { userId,role } = useAuth();
+  const { userId } = useAuth();
+  const { role } = useAuth();
   const [options, setOptions] = useState([])
   const navigate = useNavigate();
   const {
@@ -20,7 +21,8 @@ const MainLayout = () => {
   } = useStateContext();
 
   useEffect(() => {
-    if (role == "admin") setOptions(links)
+    console.log('role: ',role)
+    if (role == "admin") setOptions(adminOptions)
     else setOptions(projectAdminOptions)
   },[role])
 

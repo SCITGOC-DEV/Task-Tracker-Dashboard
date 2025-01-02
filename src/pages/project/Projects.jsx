@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "../../components/DataTable";
 import { Header } from "../../components";
-import { Link, useNavigate } from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import { useStateContext } from "../../contexts/ContextProvider";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { DELETE_INVENTORY_CATEGORY, getAllInventoryCategories } from "../../graphql/query/inventoryCategoryQueries";
@@ -36,6 +36,7 @@ export function Projects() {
     const [contents, setContents] = useState([]);
     const [open, setOpen] = useState(false)
     const [id, setId] = useState(0)
+    const location = useLocation()
 
     const [deleteProjectById] = useMutation(DELETE_PROJECT_BY_ID, {
         refetchQueries: [
@@ -92,7 +93,7 @@ export function Projects() {
         loadAllProjects({
             variables: { limit: itemsPerPage, offset: currentPage * itemsPerPage }
         });
-    }, [currentPage]);
+    }, [currentPage,location.key]);
 
     const headings = [
         "Project ID",
@@ -112,7 +113,7 @@ export function Projects() {
             type: ActionType.Icon,
             actions: [
                 {
-                    label: "Edit",
+                    label: "Detail",
                     icon: <MdMore/>,
                     onClick: (id) => navigate(`/projects/details/${id}`),
                 },

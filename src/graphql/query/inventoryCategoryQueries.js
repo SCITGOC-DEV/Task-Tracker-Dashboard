@@ -2,12 +2,13 @@ import { gql } from "@apollo/client";
 
 export const getAllInventoryCategories = gql`
 query MyQuery($limit: Int!, $offset: Int!) {
-  inventory_categories(limit: $limit, offset: $offset, order_by: {updated_at: desc}) {
+  inventory_categories(limit: $limit, offset: $offset, order_by: {updated_at: desc, created_at: desc}) {
     device
     id
     manufacturer
     model_type
     updated_at
+    created_at
   }
   total: inventory_categories_aggregate {
     aggregate {
@@ -21,6 +22,8 @@ export const getInventoryCategoriesByName = gql`
 query MyQuery( $device: String!) {
   inventory_categories(limit: 8, where: {device: {_ilike: $device}}) {
     device
+    manufacturer
+    model_type
     id
   }
 }
@@ -40,7 +43,6 @@ mutation MyMutation($manufacturer: String!, $model_type: String!, $part_number: 
   insert_inventory_categories(objects: {
     manufacturer: $manufacturer,
     model_type: $model_type,
-    part_number: $part_number,
     device: $device
   }) {
     affected_rows

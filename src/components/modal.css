@@ -1,0 +1,36 @@
+/* modal.css */
+
+/* Modal Enter Transition */
+.modal-enter {
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+.modal-enter-active {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+/* Modal Exit Transition */
+.modal-exit {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.modal-exit-active {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+/* Optional: Styling the eye icon */
+span.cursor-pointer {
+    font-size: 1.25rem;
+    color: #6b7280;
+    transition: color 0.3s ease;
+}
+
+span.cursor-pointer:hover {
+    color: #4b5563;
+}

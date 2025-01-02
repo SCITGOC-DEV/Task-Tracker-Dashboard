@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useStateContext} from "../../../contexts/ContextProvider";
 import {Header} from "../../../components";
 import {Link, useNavigate, useParams} from "react-router-dom";
@@ -75,6 +75,11 @@ const AddTask = () => {
             isValid = false;
         }
 
+        if (!quantity || isNaN(quantity)) {
+            setQuantityError("Quantity is required.")
+            isValid = false;
+        }
+
         return isValid;
     };
 
@@ -117,7 +122,6 @@ const AddTask = () => {
         },
         onError: (error) => {
             setLoading(false)
-            console.log(error.message)
             toast.error(error.message)
         }
     })
@@ -140,7 +144,6 @@ const AddTask = () => {
                 dispatch: dispatch,
                 status: status
             }
-            console.log(variables)
             addTask({
                 variables: variables
             })
@@ -195,7 +198,7 @@ const AddTask = () => {
                         title="Quantity *"
                         placeholder="Enter Quantity"
                         value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
+                        onChange={(e) => setQuantity(e.target.value.replace(/[^0-9]/g, ""))}
                         error={quantityError}
                     />
                     <InputWithError

@@ -26,11 +26,13 @@ const AddInventoryCategory = () => {
         ],
         onCompleted: ({ insert_task_name_one }) => {
             setTimeout(() => {
+                setLoading(false)
                 navigate(PageRoutes.InventoryCategory);
                 toast.success("Task have added Successfully!");
             }, 600)
         },
         onError: (error) => {
+            setLoading(false)
             toast.error(error.message);
         },
     });
@@ -54,7 +56,6 @@ const AddInventoryCategory = () => {
             variables: {
                 manufacturer: manufacturer,
                 model_type: model_type,
-                part_number: part_number,
                 device: device,
             }
         });
@@ -62,7 +63,7 @@ const AddInventoryCategory = () => {
 
     return (
         <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-            <Header title={"Add Inventory Category"} category="Pages" />
+            <Header title={"Add Inventory Category"} category="Pages" showAddButton={false} />
             <Link
                 to={PageRoutes.InventoryCategory}
                 className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"

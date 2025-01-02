@@ -22,7 +22,8 @@ const useAuth = () => {
         : null;
       if (token) {
         const user = jose.decodeJwt(token);
-        const role = user?.hasura?.["x-hasura-default-role"];
+        //console.log(JSON.stringify(user["https://hasura.io/jwt/claims"]["x-hasura-allowed-roles"][0]));
+        const role = user["https://hasura.io/jwt/claims"]["x-hasura-allowed-roles"][0];
         return role
       } else return null
   }
@@ -34,7 +35,7 @@ const useAuth = () => {
     if (token) {
       const user = jose.decodeJwt(token);
       //const role = user["https://hasura.io/jwt/claims"]["x-hasura-default-role"];
-      return user.userName
+      return user.user_name
     } else return null
   }
 

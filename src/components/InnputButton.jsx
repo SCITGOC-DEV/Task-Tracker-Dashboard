@@ -18,6 +18,9 @@ export const InputButton = ({className, onClick, error, title, buttonTitle}) => 
             <Datepicker
                 onSelectedDateChanged={handleChange}
             />
+            {error && (
+                <p className="text-red-500 text-sm mt-2">{error}</p>
+            )}
         </div>
     )
 }

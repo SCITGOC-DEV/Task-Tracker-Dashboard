@@ -1,26 +1,21 @@
 import React, {useEffect, useState} from "react";
-import { useStateContext } from "../../contexts/ContextProvider";
-import { Button, Header, TextField } from "../../components";
+import {useStateContext} from "../../contexts/ContextProvider";
+import {Header} from "../../components";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import PageRoutes from "../../utils/PageRoutes";
-import { toast } from "react-toastify";
+import {toast} from "react-toastify";
 import {useLazyQuery, useMutation} from "@apollo/client";
-import { useForm } from "react-hook-form";
 import useAuth from "../../hooks/useAuth";
-import { ActivityIndicator } from "react-native-web";
-import { addInventoryCategory, getAllInventoryCategories } from "../../graphql/query/inventoryCategoryQueries";
-import { InputWithError } from "../../components/InputWithError";
-import { InputButton } from "../../components/InnputButton";
-import { InputFieldWithSuggestion } from "../../components/TextFieldWithSuggestions";
-import DatePicker from "react-datepicker";
-import {ProjectStatusValues} from "../../utils/ProjectStatus";
-import {ADD_PROJECT_QUERY, GET_ALL_PROJECTS} from "../../graphql/query/projectQueries";
+import {ActivityIndicator} from "react-native-web";
+import {InputWithError} from "../../components/InputWithError";
+import {InputFieldWithSuggestion} from "../../components/TextFieldWithSuggestions";
 import {AppConstants} from "../../utils/Constants";
 import {InventoryStatusWithStatus} from "../../utils/ProjectInventoryStatus";
 import {
-    ADD_PROJECT_INVENTORY,
-    GET_INVENTORY_DATA_BY_SCIT, GET_PROJECT_INVENTORY_BY_ID,
-    GET_PROJECT_NAMES, UPDATE_PROJECT_INVENTORY_BY_ID
+    GET_INVENTORY_DATA_BY_SCIT,
+    GET_PROJECT_INVENTORY_BY_ID,
+    GET_PROJECT_NAMES,
+    UPDATE_PROJECT_INVENTORY_BY_ID
 } from "../../graphql/query/projectInventoryQueries";
 import {AppCheckBox} from "../../components/AppCheckBox";
 import AppDropdown from "../../components/AppDropdown";

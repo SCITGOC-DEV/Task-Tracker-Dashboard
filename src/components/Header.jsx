@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 import {useStateContext} from "../contexts/ContextProvider";
 import {IoAdd} from "react-icons/io5";
 
-const Header = ({ category, title, showAddButton = true, onAddButtonClick= () => {} , buttonTitle = "Add Task" }) => {
+const Header = ({ category, title, showAddButton = true, icon= <IoAdd/>, onAddButtonClick= () => {} , buttonTitle = "Add Task" }) => {
 
     return(
         <div className="mb-5 flex items-center justify-between">
@@ -20,7 +20,7 @@ const Header = ({ category, title, showAddButton = true, onAddButtonClick= () =>
                         onClick={onAddButtonClick}
                         className="flex items-center bg-blue-500 space-x-2 p-2 px-4 rounded-lg text-white hover:bg-blue-600 active:scale-95 transition-transform duration-150"
                     >
-                        <IoAdd/>
+                        {icon}
                         <span>{buttonTitle}</span>
                     </button>
                 </div>

@@ -56,13 +56,13 @@ const AssignTaskToUserDialog = ({taskId, show, onDismiss}) => {
             newErrors.user = 'User is required.';
         }
 
-        /*if (!startDate == null) {
+        if (startDate == null) {
             newErrors.startDate = 'Start date is required.';
         }
 
         if (endDate == null) {
             newErrors.endDate = 'End date is required.';
-        }*/
+        }
 
         if (percentage === null || percentage === '') {
             newErrors.percentage = 'Percentage is required.';
@@ -107,7 +107,7 @@ const AssignTaskToUserDialog = ({taskId, show, onDismiss}) => {
     useEffect(() => {
         setSelectedUser(null)
         loadUsers({variables: {
-                "username": `${query}%`,
+                "username": `%${query}%`,
                 "limit": 5
             }})
     }, [query]);
@@ -123,7 +123,13 @@ const AssignTaskToUserDialog = ({taskId, show, onDismiss}) => {
     const handleAssignTaskAction = () => {
         if (validateInput()) {
             setLoading(true)
-            console.log(selectedUser)
+            console.log({
+                fk_assigned_to: selectedUser,
+                end_date_time: endDate,
+                start_date_time: startDate,
+                task_id: taskId,
+                percentage: percentage
+            })
             assignTaskToUser({
                 variables: {
                     fk_assigned_to: selectedUser,
@@ -137,7 +143,7 @@ const AssignTaskToUserDialog = ({taskId, show, onDismiss}) => {
     }
 
     return (
-        <Dialog open={open} onClose={setOpen} className="relative z-10">
+        <Dialog open={open} onClose={onDismiss} className="relative z-10">
             <DialogBackdrop
                 transition
                 className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
@@ -162,6 +168,7 @@ const AssignTaskToUserDialog = ({taskId, show, onDismiss}) => {
                                             value={selectedUser?.username}
                                             onChange={(value) => handleUserSelection(value)}
                                             suggestions={users.map((user) => user.username)}
+                                            onValueChange={(value) => setQuery(value)}
                                             error={error.user}
                                             />
 

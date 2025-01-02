@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import Header from "../components/Header";
 import { Link, useNavigate } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
@@ -6,11 +6,27 @@ import { Button, PasswordTextField, TextField, Textarea } from "../components";
 import { useMutation } from "@apollo/client";
 import { REGISTER_USER } from "../graphql/mutation/registerUser";
 import { useForm } from "react-hook-form";
+import {toast} from "react-toastify";
 
 const AddUser = () => {
   const { currentColor } = useStateContext();
   const navigate = useNavigate();
-  const [registerUser, { loading }] = useMutation(REGISTER_USER);
+  const [loading, setLoading] = useState(false);
+  const [registerUser] = useMutation(REGISTER_USER, {
+    onCompleted: data => {
+      setTimeout(() => {
+        setLoading(false)
+        const response = data.response
+        if (response.accessToken.length !== 0) toast.success("New user is created successfully.")
+        else toast.error(response.message)
+        navigate(-1)
+      },500)
+    },
+    onError: error => {
+      setLoading(false)
+      toast.error(error.message)
+    }
+  });
   const {
     register,
     handleSubmit,
@@ -30,23 +46,12 @@ const AddUser = () => {
         username,
         password,
         email,
-      },
-      onCompleted: ({ UserRegister }) => {
-        if (UserRegister.error === 0) {
-          navigate("/users");
-          toast.success(UserRegister.message);
-        } else {
-          toast.error(UserRegister.message);
-        }
-      },
-      onError: (error) => {
-        console.log(error.message);
-      },
+      }
     });
   };
   return (
     <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-      <Header title={"Add User"} category="Pages" />
+      <Header title={"Add User"} category="Pages" showAddButton={false} />
       <Link
         to={"/users"}
         className="inline-block p-3 rounded-lg mb-4 text-white hover:opacity-95"

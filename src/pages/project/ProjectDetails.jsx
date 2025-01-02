@@ -20,12 +20,14 @@ import {
     GET_ALL_TASKS_AND_INVENTORIES_BY_PROJECT_ID
 } from "../../graphql/query/projectQueries";
 import AppIconButton from "../../components/AppIconButton";
-import {IoMdCreate} from "react-icons/io";
+import {IoIosReturnLeft, IoMdCreate} from "react-icons/io";
 import {FaTrash} from "react-icons/fa";
 import {GET_PROJECT_INVENTORIES} from "../../graphql/query/projectInventoryQueries";
 import {goBack} from "../../utils/Methods";
 import TwoColumnsDetailsLayout from "../../components/TwoColumnsDetailsLayout";
 import taskDetails from "./tasks/TaskDetails";
+import {IoReturnUpForwardOutline} from "react-icons/io5";
+import AssignProjectToProjectAdminDialog from "../project-admin/AssignProjectToProjectAdminDialog";
 
 const taskHeadings = [
     "No",
@@ -80,6 +82,7 @@ const ProjectDetails = () => {
     const [open, setOpen] = useState(false)
     const [taskId, setTaskId] = useState(0)
     const [projectDetails, setProjectDetails] = useState([]);
+    const [assignProjectDialogOpen, setAssignProjectDialogOpen] = useState(false);
 
     const [allInventories, setAllInventories] = useState([])
     const [projectName, setProjectName] = useState(null)
@@ -93,12 +96,8 @@ const ProjectDetails = () => {
         fetchPolicy: "network-only",
         onCompleted: data => {
             setLoading(false)
-            console.log(data)
             toast.success("Project has been deleted successfully!");
             navigate(-1)
-            /*loadAllTasks({
-                variables: { projectId: id, limit: taskItemPerPage, offset: taskCurrentPage * taskItemPerPage }
-            });*/
         },
         onError: (error) => {
             setLoading(false)
@@ -129,6 +128,7 @@ const ProjectDetails = () => {
             inventory.status || "N/A",                                     // Status
             inventory.total_qty || "N/A",                                  // Total Quantity
             //inventory.used_qty || "N/A",                                   // Used Quantity
+            inventory.inventory.id
         ]);
         setAllInventories(result)
     }
@@ -138,14 +138,14 @@ const ProjectDetails = () => {
             data.project_name || "N/A",
             data.actual_end_date || "N/A",
             data.actual_start_date || "N/A",
-            data.created_at || "N/A",
+            formatDate(data.created_at) || "N/A",
             data.created_by || "N/A",
-            data.end_date || "N/A",
+            formatDate(data.end_date) || "N/A",
             data.percentage || "N/A",
             data.project_description || "N/A",
             data.status || "N/A",
-            data.start_date || "N/A",
-            data.updated_at || "N/A"
+            formatDate(data.start_date) || "N/A",
+            formatDate(data.updated_at) || "N/A"
         ]
         setProjectDetails(result)
     }
@@ -227,7 +227,10 @@ const ProjectDetails = () => {
                 {
                     label: "Detail",
                     icon: <MdMore/>,
-                    onClick: (id) => navigate(`/projects/details/task-details/edit/${id}/${taskId}`),
+                    onClick: (inventoryId) => {
+                        const selectedItem = allInventories.find(iv => iv[0] === inventoryId)
+                        navigate(`/projects/inventory/details/${id}/${selectedItem[6]}`)
+                    },
                 }
             ]
         },
@@ -239,6 +242,10 @@ const ProjectDetails = () => {
 
     const handleInventoryPageClick = ({ selected }) => {
         setInventoryCurrentPage(selected);
+    }
+
+    const handleAssignProject = () => {
+        setAssignProjectDialogOpen(true)
     }
 
     const deleteTaskCategory = () => {
@@ -277,7 +284,9 @@ const ProjectDetails = () => {
                     <Header
                         title={`Project Details ( ${projectName} )`}
                         category="Pages"
-                        showAddButton={false}
+                        showAddButton={role === 'admin'}
+                        buttonTitle="Assign Project"
+                        onAddButtonClick={handleAssignProject}
                     />
 
                     <TwoColumnsDetailsLayout
@@ -292,7 +301,7 @@ const ProjectDetails = () => {
                     <Header
                         title={`Tasks`}
                         category={`All tasks related to the ${projectName}`}
-                        showAddButton={true}  // Ensure this is true when you want the button to show
+                        showAddButton={role === 'projectadmin'}  // Ensure this is true when you want the button to show
                         buttonTitle={"Add Task"}
                         onAddButtonClick={() => navigate(`/projects/tasks/add/${id}`)}
                     />
@@ -315,7 +324,7 @@ const ProjectDetails = () => {
                     <Header
                         title={`Inventories`}
                         category={`All inventories related to the ${projectName}`}
-                        showAddButton={true}  // Ensure this is also true
+                        showAddButton={role === 'projectadmin'}  // Ensure this is also true
                         buttonTitle={"Add Inventory To Project"}
                         onAddButtonClick={() => navigate(`/projects/project-inventory/add/${id}`)}
                     />
@@ -343,6 +352,12 @@ const ProjectDetails = () => {
                     confirmTitle={"Delete"}
                     dismissTitle={"Cancel"}
                 />
+
+                <AssignProjectToProjectAdminDialog
+                    onDismiss={() => setAssignProjectDialogOpen(false)}
+                    show={assignProjectDialogOpen}
+                    projectId={id}
+                    />
             </div>
 
         )

@@ -15,6 +15,7 @@ export const InputFieldWithSuggestion = ({
 }) => {
     const [inputValue, setInputValue] = useState(value);
     const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+    const [tempSuggestions, setTempSuggestions] = useState([]);
     const [show, setShow] = useState(false);
 
     useEffect(() => {
@@ -26,22 +27,48 @@ export const InputFieldWithSuggestion = ({
         setInputValue(newValue);
         onValueChange(newValue); // Pass the value to the parent handler
 
-        if (newValue) {
+        /*if (newValue) {
             const filtered = suggestions.filter((suggestion) =>
                 suggestion.toLowerCase().includes(newValue.toLowerCase())
             );
             setFilteredSuggestions(filtered);
+            setTempSuggestions(filtered)
+            setShow(true)
         } else {
+            setShow(false)
             setFilteredSuggestions([]);
-        }
+        }*/
     };
 
+    const arraysAreEqual = (arr1, arr2) => {
+        return JSON.stringify(arr1) === JSON.stringify(arr2);
+    };
+
+    useEffect(() => {
+        if (filteredSuggestions.length === 0) setShow(false)
+    }, [filteredSuggestions]);
+
+    useEffect(() => {
+        setTempSuggestions(suggestions)
+        if (!arraysAreEqual(suggestions,tempSuggestions)) {
+            setFilteredSuggestions(suggestions);
+        }
+    },[suggestions])
+
+    useEffect(() => {
+        if (filteredSuggestions.length > 0) setShow(true)
+    }, [filteredSuggestions]);
+
     const handleSuggestionClick = (suggestion) => {
-        console.log(suggestion)
         setInputValue(suggestion);
         onChange(suggestion); // Pass the selected suggestion to the parent handler
-        setFilteredSuggestions([]);
+        setShow(false)
+        setFilteredSuggestions([])
     };
+
+    const handleOnBlur = () => {
+        setShow(false)
+    }
 
     return (
         <div className="flex flex-col gap-1 relative min-w-full">
@@ -54,9 +81,10 @@ export const InputFieldWithSuggestion = ({
                     className={`w-full py-2 pl-4 pr-10 text-gray-700 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 ${className}`}
                     placeholder={placeholder}
                     value={inputValue}
+                    onFocus={() => setShow(true)}
                     onChange={handleInputChange}
                 />
-                {filteredSuggestions.length > 0 && (
+                {show > 0 && (
                     <ul className="absolute left-0 right-0 mt-2 border border-gray-300 rounded-lg shadow-md max-h-40 overflow-auto bg-white z-10">
                         {filteredSuggestions.map((suggestion, index) => (
                             <li

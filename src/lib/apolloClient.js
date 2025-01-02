@@ -8,7 +8,7 @@ import { IS_CLIENT } from "../config/common";
 import { ACCESS_TOKEN } from "../config/app";
 const authLink = setContext((_, { headers }) => {
   let accessToken = IS_CLIENT && window.localStorage.getItem(ACCESS_TOKEN);
-
+  console.log('token', accessToken);
   return {
     headers: {
       ...headers,
@@ -45,6 +45,7 @@ const wsLink = new GraphQLWsLink(
     retryAttempts: 5,
     connectionParams: async () => {
       let accessToken = IS_CLIENT && window.localStorage.getItem(ACCESS_TOKEN);
+      console.log('token: ',accessToken)
       return {
         headers: {
           Authorization: accessToken ? `Bearer ${accessToken}` : null,

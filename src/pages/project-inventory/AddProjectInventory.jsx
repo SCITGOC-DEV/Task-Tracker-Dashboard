@@ -59,8 +59,11 @@ const AddProjectInventory = () => {
     const [inventories, setInventories] = useState([]);
     const [modelTypes, setModelTypes] = useState([]);
 
+    const [quantity, setQuantity] = useState(null)
+
     const [getInventories] = useLazyQuery(GET_ALL_INVENTORIES_BY_SCIT, {
         onCompleted: data => {
+            console.log(data.inventories)
             setInventories(data.inventories)
         },
         onError: (error) => {
@@ -115,18 +118,11 @@ const AddProjectInventory = () => {
         let valid = true;
 
         // Validate Inventory field
-        if (manufacturer == null) {
+        if (!inventoryId) {
             setManufacturerError("Manufacturer is required.");
             valid = false;
         } else {
             setManufacturerError("");
-        }
-
-        if (modelType == null) {
-            setModelTypeError("Model Type is required.");
-            valid = false;
-        } else {
-            setModelTypeError("");
         }
 
         // Validate Total Quantity field
@@ -137,6 +133,9 @@ const AddProjectInventory = () => {
             setTotalQuantityError("");
         }
 
+        if (totalQuantity > quantity) setTotalQuantityError("Can't exceed than maximum quantity")
+        else setTotalQuantityError("")
+
         return valid;
     };
 
@@ -144,10 +143,11 @@ const AddProjectInventory = () => {
     const handleSubmit = () => {
 
         // Submit form if valid
-        if (validateForm()) {
+        if (validateForm()===true) {
             const variables = {
                 project_id: id,
                 inventory_id: inventoryId,
+                requested_at: new Date().toISOString(),
                 total_qty: Number(totalQuantity)
             }
             console.log(variables)
@@ -166,20 +166,17 @@ const AddProjectInventory = () => {
 
     const handleOnManufacturerChange = (query) => {
         setInventories([])
-        const variables = {manufacturer: `${query}%`, modelType: `${modelType}%`};
-        console.log(variables)
+        const variables = {scit: `%${query}%`};
         getAllInventoriesByManufacturerAndModelType({
             variables: variables
         });
     }
 
-    const handleOnModelTypeChange = (query) => {
-        setInventories([])
-        const variables = {modelType: `${query}%`, manufacturer: `${manufacturer}%`};
-        console.log(variables)
-        getAllInventoriesByModelType({
-            variables: variables
-        });
+    const handleOnTotalQuantityChange = (e) => {
+        const q = e.target.value.replace(/[^0-9]/g, "")
+        setTotalQuantity(q)
+        if (q > quantity) setTotalQuantityError("Can't exceed than maximum quantity")
+        else setTotalQuantityError("")
     }
 
     return (
@@ -199,50 +196,29 @@ const AddProjectInventory = () => {
                     {/* Inventory (with suggestions) */}
                     <InputFieldWithSuggestion
                         className="min-w-full"
-                        title="Manufacturer *"
-                        placeholder="Select or Enter Manufacturer"
+                        title="SCIT Control Number *"
+                        placeholder="Select SCIT Control Number"
                         value={inventory}
-                        suggestions={inventories.map(inventory => inventory.inventory_category.manufacturer)}
+                        suggestions={inventories.map(inventory => inventory.scit_control_number)}
                         onChange={(value) => {
                             const inventoryItem = inventories?.find(
-                                item => item.inventory_category.manufacturer === value
+                                item => item.scit_control_number.toLowerCase().trim() === value.toLowerCase().trim()
                             );
-                            console.log('modelType: ',modelType, inventoryItem)
-                            if (modelType != null) setInventoryId(inventoryItem?.id)
-                            setManufacturer(value)
+                            setQuantity(inventoryItem?.quantity - inventoryItem?.units_on_request)
+                            setInventoryId(inventoryItem?.id)
                         }}
                         onValueChange={handleOnManufacturerChange}
                         error={manufacturerError}
                     />
 
-                    <InputFieldWithSuggestion
-                        className="min-w-full"
-                        title="Model Type *"
-                        placeholder="Select or Enter Model Type"
-                        value={inventory}
-                        suggestions={modelTypes.map(inventory => inventory.inventory_category.model_type)}
-                        onChange={(value) => {
-                            console.log(modelTypes.map((item) => item.inventory_category.model_type))
-                            console.log(`value: ${value}`)
-
-                            const inventoryItem = modelTypes?.find(
-                                item => item.inventory_category.model_type === value
-                            );
-                            console.log('manufacturer: ',manufacturer, inventoryItem)
-                            if (manufacturer != null) setInventoryId(inventoryItem?.id)
-                            setModelType(value)
-                        }}
-                        onValueChange={handleOnModelTypeChange}
-                        error={modelTypeError}
-                    />
-
                     {/* Total Quantity */}
                     <InputWithError
                         className="min-w-full"
-                        title="Total Quantity *"
+                        title={'Total Quantity '}
                         placeholder="Enter Total Quantity"
+                        topError={quantity && `Maximum Quantity: ${quantity}`}
                         value={totalQuantity}
-                        onChange={(e) => setTotalQuantity(e.target.value)}
+                        onChange={handleOnTotalQuantityChange}
                         error={totalQuantityError}
                     />
 

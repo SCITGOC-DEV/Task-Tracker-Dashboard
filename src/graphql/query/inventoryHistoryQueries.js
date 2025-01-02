@@ -47,6 +47,12 @@ query MyQuery($controlNumber: String!) {
     id
     part_number
     scit_control_number
+    units_on_request
+    inventory_category {
+      manufacturer
+      model_type
+      device
+    }
   }
 }
 `
@@ -61,20 +67,20 @@ query MyQuery ($query: String!) {
 `
 
 export const GET_ALL_INVENTORIES_BY_MANUFACTURER_AND_MODEL_TYPE = gql `
-query MyQuery($manufacturer: String, $modelType: String) {
-  inventories(where: {
-    _or: [
-      {inventory_category: {manufacturer: {_ilike: $manufacturer}}},
-      {inventory_category: {model_type: {_ilike: $modelType}}}
-    ]
-  }, limit: 5) {
+query MyQuery($scit: String) {
+  inventories(where: {scit_control_number: {_ilike: $scit}}, limit: 5) {
     id
+    quantity
+    scit_control_number
+    units_on_request
     inventory_category {
       manufacturer
       model_type
+      device
     }
   }
 }
+
 `
 
 export const GET_ALL_INVENTORIES_BY_MODEL_TYPE = gql `

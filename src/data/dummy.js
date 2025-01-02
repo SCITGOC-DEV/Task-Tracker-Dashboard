@@ -2,18 +2,26 @@ import React from "react";
 import { GoTasklist } from "react-icons/go";
 
 import { FiUsers } from "react-icons/fi";
-import { BsCurrencyDollar } from "react-icons/bs";
+import {BsCurrencyDollar, BsGearFill, BsPersonBadge} from "react-icons/bs";
 import {GrLocation, GrTasks} from "react-icons/gr";
 import { BiCategoryAlt } from "react-icons/bi";
-import { MdInventory, MdOutlineDashboard } from "react-icons/md";
+import {MdAdminPanelSettings, MdInventory, MdOutlineDashboard} from "react-icons/md";
 import product5 from "./product5.jpg";
 import product6 from "./product6.jpg";
 import product7 from "./product7.jpg";
 import { format } from "date-fns";
 import { RiMapPin2Line } from "react-icons/ri";
-import {AiOutlineFundProjectionScreen, AiOutlineHistory, AiOutlineProject, AiOutlineSolution} from "react-icons/ai";
+import {
+  AiOutlineExclamationCircle,
+  AiOutlineFundProjectionScreen,
+  AiOutlineHistory,
+  AiOutlineProject,
+  AiOutlineSolution
+} from "react-icons/ai";
 import PageRoutes from "../utils/PageRoutes";
 import { TbChartHistogram } from "react-icons/tb";
+import {FaUsersCog} from "react-icons/fa";
+import {HiUserGroup} from "react-icons/hi2";
 
 export const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -91,7 +99,7 @@ const customerGridStatus = (props) => (
   </div>
 );
 
-export const links = [
+export const adminOptions = [
   {
     title: "Dashboard",
     links: [
@@ -115,11 +123,11 @@ export const links = [
         href: "/tasks",
         icon: <GoTasklist />,
       },*/
-      {
+      /*{
         name: "task inventory",
         href: PageRoutes.TaskInventory,
         icon: <GrTasks />,
-      },
+      },*/
       {
         name: "Implemented Sites",
         href: "/locations",
@@ -131,6 +139,11 @@ export const links = [
         icon: <AiOutlineSolution />,
       },
       {
+        name: "project admins",
+        href: PageRoutes.ProjectAdmins,
+        icon: <HiUserGroup />,
+      },
+      {
         name: "inventory categories",
         href: "/inventory-categories",
         icon: <BiCategoryAlt />,
@@ -139,6 +152,11 @@ export const links = [
         name: "inventories",
         href: PageRoutes.InventoryRecords,
         icon: <BiCategoryAlt />,
+      },
+      {
+        name: "pending inventories",
+        href: PageRoutes.PendingInventories,
+        icon: <AiOutlineExclamationCircle />,
       },
       {
         name: "projects",
@@ -173,11 +191,11 @@ export const projectAdminOptions = [
         href: "/tasks",
         icon: <GoTasklist />,
       },*/
-      {
+      /*{
         name: "task inventory",
         href: PageRoutes.TaskInventory,
         icon: <GrTasks />,
-      },
+      },*/
       {
         name: "locations",
         href: "/locations",
@@ -197,6 +215,11 @@ export const projectAdminOptions = [
         name: "inventories",
         href: PageRoutes.InventoryRecords,
         icon: <BiCategoryAlt />,
+      },
+      {
+        name: "requested inventories",
+        href: PageRoutes.RequestedInventories,
+        icon: <AiOutlineExclamationCircle />,
       },
       {
         name: "projects",

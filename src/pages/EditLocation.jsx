@@ -59,7 +59,7 @@ const EditLocation = () => {
   };
   return (
     <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-      <Header title={"Edit Location"} category="Pages" />
+      <Header title={"Edit Location"} category="Pages" showAddButton={false} />
       <Link
         to={"/locations"}
         className="inline-block p-3 rounded-lg mb-4 text-white hover:opacity-95"

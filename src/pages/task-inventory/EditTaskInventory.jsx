@@ -83,6 +83,7 @@ const EditTaskInventory = () => {
     const [taskNames, setTaskNames] = useState([]);
     const [inventories, setInventories] = useState([]);
     const [userNames, setUserNames] = useState([])
+    const [quantity, setQuantity] = useState(null)
 
     const [getTaskInventoryById] = useLazyQuery(GET_TASK_INVENTORY_BY_ID, {
         onCompleted: data => {
@@ -346,13 +347,14 @@ const EditTaskInventory = () => {
                     {/* Inventory */}
                     <InputFieldWithSuggestion
                         className="min-w-full"
-                        title="Inventory *"
-                        placeholder="Select or Enter Inventory"
+                        title="SCIT Control Number *"
+                        placeholder="Enter scit control number"
                         value={inventory}
                         suggestions={inventories.map(iv => iv.inventory.scit_control_number)}
                         onChange={(value) => {
-                            const inventory = inventories.find(iv => iv.inventory.scit_control_number == value)
-                            setInventoryId(inventory?.inventory.id)
+                            const inventory = inventories.find(iv => iv.inventory.scit_control_number.toLowerCase().trim() === value.toLowerCase().trim())
+                            setInventoryId(inventory?.inventory_id)
+                            setQuantity(inventory?.total_qty - inventory?.used_qty)
                             setInventory(value)
                         }}
                         onValueChange={handleOnInventoryChange}
@@ -383,6 +385,7 @@ const EditTaskInventory = () => {
                         title="Quantity *"
                         placeholder="Enter Quantity"
                         value={qty}
+                        topError={quantity && `Maximum quantity: ${quantity}`}
                         onChange={(e) => setQty(e.target.value)}
                         error={qtyError}
                     />

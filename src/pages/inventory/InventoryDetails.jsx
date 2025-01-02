@@ -8,8 +8,8 @@ import DataTable from "../../components/DataTable";
 import AlertDialog from "../../components/AlertDialog";
 import React, {useEffect, useState} from "react";
 import {useLocation, useNavigate, useParams} from "react-router-dom";
-import {useLazyQuery} from "@apollo/client";
-import {GET_INVENTORY_BY_ID} from "../../graphql/query/inventoryQueries";
+import {useLazyQuery, useMutation} from "@apollo/client";
+import {DELETE_INVENTORY_BY_ID, GET_ALL_INVENTORIES, GET_INVENTORY_BY_ID} from "../../graphql/query/inventoryQueries";
 import {formatDate} from "../../data/dummy";
 import Loading from "../../components/Loading";
 import {toast} from "react-toastify";
@@ -125,6 +125,24 @@ const InventoryDetails = () => {
         }
     })
 
+    const [deleteInventoryById] = useMutation(DELETE_INVENTORY_BY_ID, {
+        refetchQueries: [GET_ALL_INVENTORIES],
+        fetchPolicy: "network-only",
+        onCompleted: data => {
+            toast.success("Inventory deleted successfully.")
+            navigate(-1)
+        },
+        onError: error => {
+            toast.error(error.message)
+        }
+    })
+
+    const deleteInventory = () => {
+        deleteInventoryById({
+            variables: {inventoryId: id}
+        })
+    }
+
     useEffect(() => {
         loadInventoryById({variables: {id: id}})
     }, [location.key]);
@@ -170,6 +188,16 @@ const InventoryDetails = () => {
                     contents={contents}
                 />
             </div>
+
+            <AlertDialog
+                open={open}
+                onConfirm={deleteInventory}
+                onDismiss={() => setOpen(false)}
+                title={"Delete Project"}
+                description={"Are you sure you want to delete this inventory? All of your data will be permanently removed. This action cannot be undone."}
+                confirmTitle={"Delete"}
+                dismissTitle={"Cancel"}
+            />
 
             {/*<div className="my-12">
                 <Header

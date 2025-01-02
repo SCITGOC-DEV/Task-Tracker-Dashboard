@@ -61,8 +61,8 @@ const Dashboard = () => {
     })
 
     const handleBarChartData = (data) => {
-        const taskCount = data.reduce((acc, { fk_task_name }) => {
-            acc[fk_task_name] = (acc[fk_task_name] || 0) + 1;
+        const taskCount = data.reduce((acc, { task_name }) => {
+            acc[task_name] = (acc[task_name] || 0) + 1;
             return acc;
         }, {});
         const distinctTasks = Object.keys(taskCount);
@@ -74,8 +74,8 @@ const Dashboard = () => {
     }
 
     const handleUserData = (data) => {
-        const taskCount = data.reduce((acc, { fk_user_name }) => {
-            acc[fk_user_name] = (acc[fk_user_name] || 0) + 1;
+        const taskCount = data.reduce((acc, { username }) => {
+            acc[username] = (acc[username] || 0) + 1;
             return acc;
         }, {});
         const distinctTasks = Object.keys(taskCount);
@@ -87,8 +87,8 @@ const Dashboard = () => {
     }
 
     const handleLocationData = (data) => {
-        const taskCount = data.reduce((acc, { fk_location_name }) => {
-            acc[fk_location_name] = (acc[fk_location_name] || 0) + 1;
+        const taskCount = data.reduce((acc, { location_name }) => {
+            acc[location_name] = (acc[location_name] || 0) + 1;
             return acc;
         }, {});
         const distinctTasks = Object.keys(taskCount);
@@ -164,7 +164,7 @@ const Dashboard = () => {
     return (
         loading ? <Loading/> : (
             <div className="p-4">
-                <Dropdown options={FilterType} onSelected={handleFilterChange}/>
+                <Dropdown options={FilterType} value={filter} onSelected={handleFilterChange}/>
                 <div className="p-4 bg-gray-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* Total Revenue Card */}
                     <div className="bg-white p-6 rounded-lg shadow">

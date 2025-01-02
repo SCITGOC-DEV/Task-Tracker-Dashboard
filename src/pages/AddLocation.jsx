@@ -37,7 +37,7 @@ const AddLocation = () => {
         },
       ],
       onCompleted: ({ location }) => {
-        navigate("/locations");
+        navigate(-1);
         toast.success("Location have added Successfully!");
       },
       onError: (error) => {
@@ -47,7 +47,7 @@ const AddLocation = () => {
   };
   return (
     <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-      <Header title={"Add Location"} category="Pages" />
+      <Header title={"Add Location"} category="Pages" showAddButton={false}/>
       <Link
         to={"/locations"}
         className="inline-block p-3 rounded-lg mb-4 text-white hover:opacity-95"

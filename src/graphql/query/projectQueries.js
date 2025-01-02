@@ -40,31 +40,20 @@ query MyQuery($id: Int!) {
 `
 
 export  const ADD_PROJECT_QUERY = gql `
-mutation MyMutation(
-  $project_name: String!,
-  $project_description: String,
-  $created_by: String!,
-  $start_date: timestamptz!,
-  $end_date: timestamptz!,
-  $status: String,
-  $actual_start_date: timestamptz,
-  $actual_end_date: timestamptz,
-  $percentage: numeric
-) {
-  insert_projects(objects: {
-    project_name: $project_name,
-    project_description: $project_description,
-    created_by: $created_by,
-    start_date: $start_date,
-    end_date: $end_date,
-    status: $status,
-    actual_start_date: $actual_start_date,
-    actual_end_date: $actual_end_date,
-    percentage: $percentage
-  }) {
-    affected_rows
+mutation MyMutation($project_name: String!, $start_date: timestamptz!, $project_description: String!, $percentage: numeric!, $end_date: timestamptz!, $status: String!) {
+  response: project_create_project(
+    project_name: $project_name, 
+    start_date: $start_date, 
+    project_description: $project_description, 
+    percentage: $percentage, 
+    end_date: $end_date, 
+    status: $status
+  ) {
+    message
+    success
   }
-}`
+}
+`
 
 export const UPDATE_PROJECT_BY_ID = gql `
 mutation UpdateProject(
@@ -125,6 +114,7 @@ query MyQuery($id: Int!) {
       project_id
       updated_at
       inventory {
+        id
         inventory_category {
           manufacturer
           model_type

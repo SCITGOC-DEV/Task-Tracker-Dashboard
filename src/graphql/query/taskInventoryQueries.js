@@ -34,11 +34,19 @@ query MyQuery ($query: String!) {
 `
 
 export const GET_INVENTORY_NAMES = gql`
-    query MyQuery ($query: String!){
-  task_inventories(limit: 5, where: {inventory: {scit_control_number: {_ilike: $query}}}) {
+query MyQuery($query: String!, $projectId: Int!) {
+  response: project_inventories(where: {project_id: {_eq: $projectId}, inventory: {scit_control_number: {_ilike: $query}}}) {
+    id
+    inventory_id
+    total_qty
+    used_qty
     inventory {
       scit_control_number
-      id
+      inventory_category {
+        manufacturer
+        model_type
+        device
+      }
     }
   }
 }
@@ -56,23 +64,20 @@ export const ADD_TASK_INVENTORY =  gql `
 mutation MyMutation(
   $inventory_id: Int!,
   $project_id: Int!,
-  $qty: Int!,
   $rent_date: timestamptz!,
   $request_date: timestamptz!,
-  $request_user_name: String!,
   $return_date: timestamptz!,
   $task_id: Int!,
   $total_qty: Int!,
   $remark: String!
+ 
 ) {
   task_assigned_inventory_to_task(
     inventory_id: $inventory_id,
     project_id: $project_id,
-    qty: $qty,
     rent_date: $rent_date,
-    request_date: $request_date,
-    request_user_name: $request_user_name,
     return_date: $return_date,
+    request_date: $request_date,
     task_id: $task_id,
     total_qty: $total_qty,
     remark: $remark
@@ -150,9 +155,82 @@ export const UPDATE_TASK_INVENTORY = gql`
   }
 `;
 
+export const GET_TASK_INVENTORY_DETAILS_BY_ID = gql `
+query MyQuery($id: Int!) {
+  task_inventories(where: {id: {_eq: $id}}) {
+    actual_rent_date
+    actual_return_date
+    approved_user_name
+    created_at
+    id
+    inventory {
+      address
+      country
+      email_address
+      part_number
+      scit_control_number
+      serial_number_end
+      serial_number_start
+      stock_office
+      total_amount
+      total_stock_amount
+      total_unit_release
+      unit_price
+    }
+    inventory_id
+    is_return
+    project_id
+    remark
+    rent_date
+    request_date
+    request_user_name
+    return_date
+    return_received_user_name
+    status
+    task_id
+    task {
+      task_name
+    }
+    total_qty
+    updated_at
+    used_qty
+  }
+}
+`
+
 export const DELETE_TASK_INVENTORY_BY_ID = gql `
 mutation MyMutation ($id: Int!) {
   delete_task_inventories(where: {id: {_eq: $id}}) {
     affected_rows
   }
 }`
+
+export const RETURN_TASK_INVENTORY = gql `
+mutation MyMutation(
+  $return_date: String!,
+  $return_qty: Int!,
+  $task_inventory_id: Int!,
+  $remark: String!,
+  $description: String!
+) {
+  response: inventory_create_return_inventory_task(
+    return_date: $return_date,
+    return_qty: $return_qty,
+    task_inventory_id: $task_inventory_id,
+    remark: $remark,
+    description: $description
+  ) {
+    message
+    success
+  }
+}
+`
+
+export const ADD_INVENTORY_QUANTITY = gql `
+mutation MyMutation($inventory_id: Int!, $qty: Int!, $remark: String!) {
+  response: inventory_add_qty_inventory(inventory_id: $inventory_id, qty: $qty, remark: $remark) {
+    message
+    success
+  }
+}
+`

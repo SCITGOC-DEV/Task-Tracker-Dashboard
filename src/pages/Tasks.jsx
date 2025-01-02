@@ -10,7 +10,7 @@ import IconButton from "../components/IconButton";
 import Loading from "../components/Loading";
 import DataTable from "../components/DataTable";
 import {ActionType} from "../utils/Constants";
-import {MdDelete, MdModeEdit} from "react-icons/md";
+import {MdDelete, MdModeEdit, MdMore} from "react-icons/md";
 
 const Tasks = () => {
   const { currentColor } = useStateContext();
@@ -65,9 +65,9 @@ const Tasks = () => {
       type: ActionType.Icon,
       actions: [
         {
-          label: "Edit",
-          icon: <MdModeEdit/>,
-          onClick: (id) => navigate(`/trackings/${id}`),
+          label: "Detail",
+          icon: <MdMore/>,
+          onClick: (taskId) => navigate(`/trackings/details/${taskId}`),
         }
       ]
     },
@@ -102,7 +102,7 @@ const Tasks = () => {
 
   return (
     <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
-      <Header title={"Tracking Tasks"} category="Pages" />
+      <Header title={"Tracking Tasks"} category="Pages" showAddButton={false} />
       <DataTable
           headings={headings}
           contents={contents}

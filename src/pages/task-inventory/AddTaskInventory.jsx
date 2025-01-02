@@ -41,8 +41,6 @@ const AddTaskInventory = () => {
 
     const {id, taskId} = useParams()
 
-    console.log(id, taskId)
-
     const today = new Date().toISOString();
 
     // State and error handling
@@ -84,9 +82,11 @@ const AddTaskInventory = () => {
     const [inventories, setInventories] = useState([]);
     const [userNames, setUserNames] = useState([])
 
+    const [quantity, setQuantity] = useState(null)
+
     const [getInventories] = useLazyQuery(GET_INVENTORY_NAMES, {
         onCompleted: data => {
-            setInventories(data.task_inventories)
+            setInventories(data.response)
         },
         onError: (error) => {
             console.log(error)
@@ -106,7 +106,6 @@ const AddTaskInventory = () => {
         onCompleted: data => {
             setTimeout(() => {
                 setLoading(false)
-
                 const response = data.task_assigned_inventory_to_task
                 if (response.success) {
                     toast.success("Added task inventory successfully!")
@@ -116,6 +115,7 @@ const AddTaskInventory = () => {
             }, [AppConstants.LOADING_DELAY])
         },
         onError: (error) => {
+            console.log(error)
             setLoading(false)
             toast.error(error.message)
         }
@@ -147,33 +147,15 @@ const AddTaskInventory = () => {
             setReturnDateError('');
         }
 
-        if (!qty) {
-            setQtyError('Quantity is required');
-            valid = false;
-        } else {
-            setQtyError('');
-        }
-
-        if (!totalQty) {
+        if (!totalQty || isNaN(totalQty)) {
             setTotalQtyError('Total quantity is required');
             valid = false;
         } else {
             setTotalQtyError('');
         }
 
-        if (!status) {
-            setStatusError('Status is required');
-            valid = false;
-        } else {
-            setStatusError('');
-        }
-
-        if (!requestUserName) {
-            setRequestUserNameError('Request User Name is required');
-            valid = false;
-        } else {
-            setRequestUserNameError('');
-        }
+        if (totalQty > quantity) setTotalQtyError("Can't exceed than maximum quantity")
+        else setTotalQtyError('')
 
         if (!requestDate) {
             setRequestDateError('Request Date is required');
@@ -189,20 +171,17 @@ const AddTaskInventory = () => {
     const handleSubmit = () => {
 
         // Submit form if valid
-        if (validateForm()) {
+        if (validateForm() === true) {
             const variables = {
                 project_id: id,                        // Assuming 'id' is the project ID
-                task_id: taskId,                       // Assuming 'taskId' is the task ID
-                inventory_id: inventoryId,             // Assuming 'inventoryId' is the inventory ID
-                qty: qty,                         // Quantity, defaulting to 0 if not provided
-                total_qty: totalQty,              // Total quantity, defaulting to 0 if not provided
+                task_id: Number(taskId),                       // Assuming 'taskId' is the task ID
+                inventory_id: Number(inventoryId),             // Assuming 'inventoryId' is the inventory ID
+                total_qty: Number(totalQty),              // Total quantity, defaulting to 0 if not provided
                 rent_date: rentDate,           // Rent date, null if not provided
-                return_date: returnDate,       // Return date, null if not provided
+                return_date: returnDate,
                 request_date: requestDate,     // Request date, null if not provided
-                request_user_name: requestUserName, // Request user name, empty string if not provided
                 remark: remark                 // Remark, empty string if not provided
             }
-            console.log(variables)
             setLoading(true)
             addTaskInventory({
                 variables: variables
@@ -211,8 +190,9 @@ const AddTaskInventory = () => {
     };
 
     const handleOnInventoryChange = (query) => {
+        const variables = {query: `%${query}%`, projectId: Number(id)}
         getInventories({
-            variables: {query: `${query}%`}
+            variables: variables
         })
     }
 
@@ -239,13 +219,14 @@ const AddTaskInventory = () => {
                     {/* Inventory */}
                     <InputFieldWithSuggestion
                         className="min-w-full"
-                        title="Inventory *"
-                        placeholder="Select or Enter Inventory"
+                        title="SCIT Control Number *"
+                        placeholder="Enter scit control number"
                         value={inventory}
                         suggestions={inventories.map(iv => iv.inventory.scit_control_number)}
                         onChange={(value) => {
-                            const inventory = inventories.find(iv => iv.inventory.scit_control_number == value)
-                            setInventoryId(inventory?.inventory.id)
+                            const inventory = inventories.find(iv => iv.inventory.scit_control_number.toLowerCase().trim() === value.toLowerCase().trim())
+                            setInventoryId(inventory?.inventory_id)
+                            setQuantity(inventory?.total_qty - inventory?.used_qty)
                             setInventory(value)
                         }}
                         onValueChange={handleOnInventoryChange}
@@ -261,39 +242,27 @@ const AddTaskInventory = () => {
                         error={rentDateError}
                     />
 
-                    {/* Return Date */}
-                    <InputButton
-                        className="min-w-full"
-                        title="Return Date *"
-                        buttonTitle={returnDate || 'Select Return Date'}
-                        onClick={(date) => setReturnDate(date)}
-                        error={returnDateError}
-                    />
-
-                    {/* Quantity */}
-                    <InputWithError
-                        className="min-w-full"
-                        title="Quantity *"
-                        placeholder="Enter Quantity"
-                        value={qty}
-                        onChange={(e) => setQty(e.target.value)}
-                        error={qtyError}
-                    />
-
                     <InputWithError
                         className="min-w-full"
                         title="Total Quantity *"
                         placeholder="Enter Total Quantity"
                         value={totalQty}
-                        onChange={(e) => setTotalQty(e.target.value)}
+                        topError={quantity && `Maximum quantity: ${quantity}`}
+                        onChange={(e) => {
+                            const q = e.target.value.replace(/[^0-9]/g, "")
+                            setTotalQty(q)
+                            if (q > quantity) setTotalQtyError("Can't exceed than maximum quantity")
+                            else setTotalQtyError("")
+                        }}
                         error={totalQtyError}
                     />
 
-                    <AppDropdown
+                    {/*<AppDropdown
                         title={"Status *"}
                         value={status}
                         options={ProjectStatusValues}
-                        onSelected={(value) => setStatus(value)}/>
+                        error={statusError}
+                        onSelected={(value) => setStatus(value)}/>*/}
 
                     {/* Remark */}
                     <InputWithError
@@ -305,16 +274,12 @@ const AddTaskInventory = () => {
                         error={''} // No required field error
                     />
 
-                    {/* Request User Name */}
-                    <InputFieldWithSuggestion
+                    <InputButton
                         className="min-w-full"
-                        title="Request User Name *"
-                        placeholder="Select or Enter Request User Name"
-                        value={requestUserName}
-                        suggestions={userNames.map(user => user.username)}
-                        onChange={(value) => setRequestUserName(value)}
-                        error={requestUserNameError}
-                        onValueChange={handleOnUserNameChange}
+                        title="Return Date *"
+                        buttonTitle={returnDate || 'Select Return Date'}
+                        onClick={(date) => setReturnDate(date)}
+                        error={returnDateError}
                     />
 
                     {/* Request Date */}

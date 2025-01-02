@@ -33,6 +33,7 @@ const UpdateInventoryCategory = (category) => {
         },
 
         onError: (error) => {
+            setLoading(false)
             toast.error(error.message);
         },
     });
@@ -65,7 +66,6 @@ const UpdateInventoryCategory = (category) => {
     })
 
     useEffect(() => {
-        console.log(`id: ${id}`)
         getCategoryById({
             variables: { id: id }
         })
@@ -86,7 +86,7 @@ const UpdateInventoryCategory = (category) => {
 
     return (
         <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white ">
-            <Header title={"Update Inventory Category"} category="Pages" />
+            <Header title={"Update Inventory Category"} category="Pages" showAddButton={false} />
             <Link
                 to={PageRoutes.InventoryCategory}
                 className="inline-block p-2 px-4 rounded-lg mb-4 text-white hover:opacity-95"
@@ -105,22 +105,9 @@ const UpdateInventoryCategory = (category) => {
                             <h3 className="text-lg mb-1">Manufacturer</h3>
                             <div>
                                 <TextField
-                                    {...register("manufacturer", {
-                                        required: "manufacturer is required field",
-                                    })}
                                     disabled={loading}
                                     placeholder="Manufacturer"
                                     fullWidth
-                                    error={
-                                        touchedFields.manufacturer &&
-                                        errors.manufacturer &&
-                                        Boolean(errors.manufacturer)
-                                    }
-                                    helperText={
-                                        touchedFields.manufacturer &&
-                                        errors.manufacturer &&
-                                        errors.manufacturer.message
-                                    }
                                 />
                             </div>
                         </div>
@@ -175,7 +162,7 @@ const UpdateInventoryCategory = (category) => {
 
                         <Button
                             style={{ background: currentColor }}
-                            disabled={loading || !(isValid && isDirty)}
+                            disabled={loading }
                             fullWidth
                             className="rounded-lg"
                             size="large"

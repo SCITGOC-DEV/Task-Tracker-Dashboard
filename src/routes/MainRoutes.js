@@ -24,7 +24,7 @@ import { InventoryRecords } from "../pages/inventory/InventoryRecords";
 import AddInventoryToTask from "../pages/inventory_to_task/AddInventoryToTask";
 import { InventoryToTask } from "../pages/inventory_to_task/InventoryToTask";
 import { InventoryCategories } from "../pages/InventoryCategories";
-import ProjectAdminHome from "../pages/project-admin/ProjectAdminHome";
+import ProjectAdmins from "../pages/project-admin/ProjectAdmins";
 import AddProject from "../pages/project/AddProject";
 import { Projects } from "../pages/project/Projects";
 import PageRoutes from "../utils/PageRoutes";
@@ -40,6 +40,13 @@ import UpdateInventory from "../pages/inventory/UpdateInventory";
 import ProjectDetails from "../pages/project/ProjectDetails";
 import TaskDetails from "../pages/project/tasks/TaskDetails";
 import InventoryDetails from "../pages/inventory/InventoryDetails";
+import ProjectInventoryDetails from "../pages/project-inventory/ProjectInventoryDetails";
+import TaskInventoryDetails from "../pages/task-inventory/TaskInventoryDetails";
+import ReturnProjectInventory from "../pages/project-inventory/ReturnProjectInventory";
+import PendingInventories from "../pages/pending-inventories/PendingInventories";
+import AddProjectAdmin from "../pages/project-admin/AddProjectAdmin";
+import UpdateProjectAdmin from "../pages/project-admin/UpdateProjectAdmin";
+import RequestedTaskInventories from "../pages/pending-inventories/RequestedTaskInventories";
 
 
 const MainRoutes = {
@@ -47,8 +54,16 @@ const MainRoutes = {
   element: <MainLayout />,
   children: [
     {
-      path: "/project-admin",
-      element: <ProjectAdminHome />,
+      path: PageRoutes.ProjectAdmins,
+      element: <ProjectAdmins />,
+    },
+    {
+      path: PageRoutes.AddProjectAdmins,
+      element: <AddProjectAdmin />,
+    },
+    {
+      path: PageRoutes.EditProjectAdmins,
+      element: <UpdateProjectAdmin />,
     },
     {
       path: "/",
@@ -128,6 +143,10 @@ const MainRoutes = {
       element: <TrackingTask />,
     },
     {
+      path: PageRoutes.TaskDetailsMain,
+      element: <TaskDetails/>,
+    },
+    {
       path: "/trackings/:id",
       element: <TrackingDetail />,
     },
@@ -148,8 +167,21 @@ const MainRoutes = {
       element: <AddInventory/>
     },
     {
+      path: PageRoutes.AddInventoryMain,
+      element: <AddInventory/>
+    },
+    {
       path: `${PageRoutes.InventoryDetails}/:id`,
       element: <InventoryDetails/>
+    },
+
+    {
+      path: PageRoutes.InventoryDetailsMain,
+      element: <InventoryDetails/>
+    },
+    {
+      path: PageRoutes.ProjectInventoryDetails,
+      element: <ProjectInventoryDetails/>
     },
     {
       path: PageRoutes.InventoryRecords,
@@ -160,12 +192,21 @@ const MainRoutes = {
       element: <UpdateInventory/>
     },
     {
+      path: PageRoutes.UpdateInventoryMain,
+      element: <UpdateInventory/>
+    },
+    {
       path: PageRoutes.InventoryToTask,
       element: <InventoryToTask/>
     },
     {
       path: PageRoutes.AddInventoryToTask,
       element: <AddInventoryToTask/>
+    },
+
+    {
+      path: PageRoutes.TaskInventoryDetails,
+      element: <TaskInventoryDetails/>
     },
     {
       path: PageRoutes.Projects,
@@ -188,13 +229,25 @@ const MainRoutes = {
       element: <ProjectInventory/>
     },
     {
+      path: PageRoutes.ReturnProjectInventory,
+      element: <ReturnProjectInventory/>
+    },
+    {
       path: PageRoutes.AddProjectInventory,
       element: <AddProjectInventory/>
     },
     {
       path: PageRoutes.EditProjectInventory,
       element: <EditProjectInventory/>
-    }
+    },
+    {
+      path: PageRoutes.PendingInventories,
+      element: <PendingInventories/>
+    },
+    {
+      path: PageRoutes.RequestedInventories,
+      element: <RequestedTaskInventories/>
+    },
   ],
 };
 

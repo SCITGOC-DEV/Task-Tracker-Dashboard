@@ -35,7 +35,7 @@ query MyQuery($taskId: Int!) {
     project {
       project_name
     }
-    users: assigned_task(limit: 5, order_by: {created_at: desc}) {
+    users: assigned_task(limit: 5, order_by: {created_at: desc}, where: {active: {_eq: true}}) {
       id  
       user {
         username
@@ -46,6 +46,7 @@ query MyQuery($taskId: Int!) {
       }
     }
     task_inventories: task_inventory(limit: 5, order_by: {created_at: desc}) {
+      id  
       total_qty
       inventory {
         admin_name
@@ -57,7 +58,7 @@ query MyQuery($taskId: Int!) {
         }
       }
     }
-    users_count: assigned_task_aggregate {
+    users_count: assigned_task_aggregate ( where: {active: {_eq: true}}) {
       aggregate {
         count
       }
@@ -82,30 +83,32 @@ mutation MyMutation($assigned_task_id: Int!, $task_id: Int!) {
 
 export const GET_ASSIGNED_USERS_BY_TASK_ID = gql`
   query MyQuery($taskId: Int!, $limit: Int, $offset: Int) {
-    tasks(where: { id: { _eq: $taskId } }) {
-      users: assigned_task(limit: $limit, offset: $offset, order_by: {created_at: desc}) {
+  tasks(where: {id: {_eq: $taskId}}) {
+    users: assigned_task(limit: $limit, offset: $offset, order_by: {created_at: desc}, where: {active: {_eq: true}}) {
+      id
+      active
+      user {
+        username
+        phone
         id
-        user {
-          username
-          phone
-          id
-          email
-          address
-        }
+        email
+        address
       }
-      users_count: assigned_task_aggregate {
-        aggregate {
-          count
-        }
+    }
+    users_count: assigned_task_aggregate(where: {active: {_eq: true}}) {
+      aggregate {
+        count
       }
     }
   }
+}
 `;
 
 export const GET_TASK_INVENTORIES_BY_TASK_ID = gql `
 query MyQuery($taskId: Int!, $limit: Int!, $offset: Int!) {
   tasks(where: {id: {_eq: $taskId}}, limit: $limit, offset: $offset) {
     task_inventories: task_inventory(limit: 5, order_by: {created_at: desc}) {
+      id
       qty
       total_qty
       inventory {

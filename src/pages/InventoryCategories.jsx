@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "../components/DataTable";
 import { Header } from "../components";
-import { Link, useNavigate } from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { DELETE_INVENTORY_CATEGORY, getAllInventoryCategories } from "../graphql/query/inventoryCategoryQueries";
@@ -31,6 +31,7 @@ export function InventoryCategories() {
     const [open, setOpen] = useState(false)
     const [id, setId] = useState(0)
     const [inventoryCategories, setInventoryCategories] = useState([])
+    const location = useLocation()
 
     const [deleteInventoryCategory] = useMutation(DELETE_INVENTORY_CATEGORY, {
         refetchQueries: [
@@ -74,13 +75,14 @@ export function InventoryCategories() {
         loadAllInventoryCategories({
             variables: { limit: itemsPerPage, offset: currentPage * itemsPerPage }
         });
-    }, [currentPage]);
+    }, [currentPage, location.key]);
 
     const headings = [
         "ID",
         "Device",
         "Manufacturer",
         "Model Type",
+        "Created At",
         "Updated At"
     ];
 
@@ -99,16 +101,6 @@ export function InventoryCategories() {
                     onClick: (id) => handleOnDeleteClick(id),
                 }
             ]
-        },
-        {
-            type: ActionType.Dropdown,
-            actions: [
-                {
-                    label: "Add Inventory",
-                    icon: <GrAdd/>,
-                    onClick: (id) => navigate(`/inventory-categories/inventories/${id}`),
-                }
-            ]
         }
     ]
 
@@ -118,6 +110,7 @@ export function InventoryCategories() {
             device = "N/A",
             manufacturer = "N/A",
             model_type = "N/A",
+            created_at = "N/A",
             updated_at = "N/A"
         } = category;
 
@@ -126,6 +119,7 @@ export function InventoryCategories() {
             device,
             manufacturer,
             model_type,
+            formatDate(created_at),
             formatDate(updated_at) // Ensure you format the date appropriately
         ];
     });
@@ -135,7 +129,6 @@ export function InventoryCategories() {
     };
 
     const handleOnEditClick = (categoryId) => {
-        //console.log(id)
         navigate(`/inventory-categories/edit/${categoryId}`)
     }
 
@@ -156,8 +149,8 @@ export function InventoryCategories() {
     return (
         loading ? (<Loading />) : (
             <div className="m-2 md:m-5 mt-24 p-2 md:p-5 dark:text-white">
-                <Header title={"Inventory Categories"} category="Pages" />
-                {
+                <Header title={"Inventory Categories"} category="Pages" buttonTitle="Add Inventory Categroy" onAddButtonClick={() => navigate(PageRoutes.AddInventoryCategory)} />
+                {/*{
                     (role == "admin") ? (
                         <div className="flex flex-row justify-end">
                             <Link
@@ -169,7 +162,7 @@ export function InventoryCategories() {
                             </Link>
                         </div>
                     ) : <div></div>
-                }
+                }*/}
                 <DataTable
                     showDeleteOption={role == "admin"}
                     headings={headings}

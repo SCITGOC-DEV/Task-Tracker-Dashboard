@@ -54,9 +54,12 @@ const AddProject = () => {
         ],
         onCompleted: data => {
             setTimeout(() => {
-                setLoading(false)
-                navigate(PageRoutes.Projects);
-                toast.success("Project Added successfully.");
+                const response = data.response;
+                if (response.success) {
+                    setLoading(false)
+                    navigate(-1);
+                    toast.success("New project is added successfully.");
+                } else toast.error(response.message)
             }, AppConstants.LOADING_DELAY)
         },
         onError: (e) => {
@@ -97,12 +100,9 @@ const AddProject = () => {
             const variables = {
                 project_name: projectName,
                 project_description: projectDescription,
-                created_by: userName,
                 start_date: startDate,
                 end_date: endDate,
                 status: status,
-                actual_start_date: actualStartDate,
-                actual_end_date: actualEndDate,
                 percentage: 0
             };
             console.log(variables)
